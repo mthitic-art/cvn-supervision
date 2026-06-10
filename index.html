@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CVN — ระบบนิเทศการสอน Active Learning</title>
+<style>
+/* ══════ CONFIG ══════ */
+:root {
+  --g1:#1a3a18; --g2:#2d5a27; --g3:#4a7c44; --gold:#c9a84c;
+  --bg:#f0f5f0; --card:#fff; --border:#e0e8e0; --txt:#1a2e1a; --sub:#6b7280;
+  --r5:#15803d; --r4:#1d4ed8; --r3:#7c3aed; --r2:#c2410c; --r1:#dc2626;
+  --fs-base:16px; --fs-sm:14px; --fs-xs:12px; --fs-lg:18px; --fs-xl:22px;
+  --pad:16px; --radius:14px; --gap:12px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Sarabun','Noto Sans Thai',system-ui,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;font-size:var(--fs-base);line-height:1.6;-webkit-text-size-adjust:100%}
+a{color:var(--g2);text-decoration:none}
+
+/* ══════ LAYOUT ══════ */
+.header{background:linear-gradient(135deg,var(--g1),var(--g2),var(--g1));color:#fff;padding:var(--pad);position:sticky;top:0;z-index:50;box-shadow:0 4px 20px rgba(0,0,0,.3)}
+.header-inner{max-width:860px;margin:0 auto;display:flex;align-items:center;gap:14px}
+.header h1{font-size:var(--fs-xl);font-weight:700;letter-spacing:.5px}
+.header p{font-size:var(--fs-xs);color:#c9d4c9;margin-top:2px}
+.nav{display:flex;gap:4px;background:#0f260e;border-radius:12px;padding:4px;max-width:860px;margin:10px auto 0}
+.nav button{flex:1;padding:12px 8px;border:none;border-radius:10px;font-size:var(--fs-sm);font-weight:700;cursor:pointer;background:transparent;color:#8aa88a;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .2s;min-height:44px}
+.nav button.active{background:var(--g2);color:#fff}
+.body{max-width:860px;margin:0 auto;padding:var(--pad) var(--gap) 120px}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:0 2px 12px rgba(0,0,0,.06);overflow:hidden;margin-bottom:var(--gap)}
+.card-head{padding:14px var(--pad);background:linear-gradient(135deg,var(--g1),var(--g2));color:#fff;font-weight:700;font-size:var(--fs-lg)}
+
+/* ══════ FORM ELEMENTS ══════ */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap);padding:var(--pad)}
+.grid2 .full{grid-column:1/-1}
+label.f-label{font-size:var(--fs-xs);font-weight:700;color:#4a5e4a;display:block;margin-bottom:4px}
+input.f-inp,select.f-inp,textarea.f-inp{width:100%;padding:12px 14px;border:2px solid var(--border);border-radius:10px;font-size:var(--fs-base);outline:none;box-sizing:border-box;font-family:inherit;background:#fff;transition:border .2s;min-height:48px}
+input.f-inp:focus,select.f-inp:focus,textarea.f-inp:focus{border-color:var(--g2);box-shadow:0 0 0 3px rgba(45,90,39,.15)}
+textarea.f-inp{min-height:100px;resize:vertical}
+
+/* ══════ DOMAIN / INDICATOR ══════ */
+.dom-head{display:flex;align-items:center;padding:var(--pad);cursor:pointer;gap:12px;transition:all .2s}
+.dom-head.on{background:linear-gradient(135deg,var(--g1),var(--g2));color:#fff}
+.dom-head:not(.on){background:#f8faf8;color:var(--g1)}
+.dom-score{text-align:right;min-width:56px}
+.dom-score .num{font-size:20px;font-weight:800}
+.dom-score .max{font-size:var(--fs-xs);opacity:.7}
+.progress{height:8px;border-radius:4px;background:#e8efe8;overflow:hidden;margin:0 var(--pad) 6px}
+.progress-fill{height:100%;border-radius:4px;transition:width .3s}
+.sub-head{display:flex;align-items:center;justify-content:space-between;padding:12px var(--pad);cursor:pointer;border-top:1px solid #e8efe8;transition:background .2s;min-height:52px}
+.sub-head.on{background:#f0f7f0}
+.ind-row{padding:14px var(--pad);border-top:1px solid #f5f8f5}
+.ind-row.star{background:#fffbf0}
+.ind-row.even{background:#fafcfa}
+.ind-text{display:flex;gap:8px;margin-bottom:10px;font-size:var(--fs-base);color:#374151;line-height:1.6}
+.rating{display:flex;gap:8px;padding-left:20px;align-items:center;flex-wrap:wrap}
+.r-btn{min-width:52px;height:46px;border:2px solid #d4d4d8;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:#fff;color:#9ca3af;font-size:var(--fs-lg);font-weight:800;line-height:1;transition:all .15s;-webkit-tap-highlight-color:transparent}
+.r-btn:hover{transform:scale(1.05)}
+.r-btn:active{transform:scale(.95)}
+.r-btn.sel{color:#fff}
+.r-btn .r-lbl{font-size:9px;font-weight:600;margin-top:2px}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:12px;font-size:var(--fs-xs);font-weight:700}
+
+/* ══════ PHOTO ══════ */
+.photo-bar{padding:10px var(--pad) 12px;border-top:1px solid #e8efe8;background:#f8faf8;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.photo-btn{padding:8px 16px;border:2px dashed #b0c4b0;border-radius:10px;background:#fff;color:var(--g2);font-size:var(--fs-sm);font-weight:700;cursor:pointer;min-height:44px}
+.photo-thumb{width:52px;height:52px;object-fit:cover;border-radius:8px;border:2px solid #d1e0d1}
+.photo-rm{position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;background:#dc2626;color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none}
+
+/* ══════ BUTTONS ══════ */
+.btn{padding:16px;border:none;border-radius:var(--radius);font-size:var(--fs-base);font-weight:700;cursor:pointer;width:100%;transition:all .2s;font-family:inherit;min-height:52px;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-primary{background:linear-gradient(135deg,var(--g2),var(--g1));color:#fff}
+.btn-primary:active{opacity:.8}
+.btn-outline{background:#fff;border:2px solid var(--g2);color:var(--g2)}
+.btn-danger{background:#fff;border:2px solid #dc2626;color:#dc2626}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-row{display:flex;gap:var(--gap);margin-bottom:var(--gap)}
+
+/* ══════ FLOATING BUTTON ══════ */
+.fab{position:fixed;bottom:20px;right:16px;background:linear-gradient(135deg,var(--g2),var(--g1));color:#fff;border:none;border-radius:16px;padding:14px 24px;font-size:var(--fs-base);font-weight:700;cursor:pointer;box-shadow:0 6px 24px rgba(26,58,24,.4);z-index:50;display:flex;align-items:center;gap:8px;font-family:inherit;min-height:52px}
+
+/* ══════ TOAST ══════ */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--g1);color:#fff;padding:12px 24px;border-radius:12px;font-size:var(--fs-sm);font-weight:600;z-index:999;box-shadow:0 6px 20px rgba(0,0,0,.3);transition:opacity .3s;white-space:nowrap}
+.toast.hide{opacity:0;pointer-events:none}
+
+/* ══════ MODAL ══════ */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;display:flex;align-items:center;justify-content:center;padding:var(--pad)}
+.modal{background:#fff;border-radius:16px;max-width:560px;width:100%;max-height:85vh;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.modal-head{padding:16px;background:linear-gradient(135deg,var(--g1),var(--g2));color:#fff;font-weight:700;font-size:var(--fs-lg);display:flex;justify-content:space-between;align-items:center}
+
+/* ══════ EXPORT / PRINT ══════ */
+.export-doc{background:#fff;border-radius:var(--radius);box-shadow:0 2px 12px rgba(0,0,0,.06);overflow:hidden;margin-bottom:var(--gap)}
+@media print {
+  .header, #status-bar, #fab, #toast, .no-print { display:none !important }
+  body { background:#fff !important; padding:0 !important; margin:0 !important; font-size:12px !important }
+  .body { padding:0 !important; max-width:none !important }
+  .export-doc { box-shadow:none !important; border-radius:0 !important; margin:0 !important; border:none !important }
+  .export-doc * { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; color-adjust:exact !important }
+  @page { size:A4; margin:10mm }
+}
+
+/* ══════ SPINNER ══════ */
+.spinner{display:inline-block;width:20px;height:20px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ══════ STATUS BAR ══════ */
+.status-bar{padding:10px var(--pad);background:#fff3cd;color:#856404;font-size:var(--fs-sm);text-align:center;display:none}
+.status-bar.connected{background:#d4edda;color:#155724}
+.status-bar.error{background:#f8d7da;color:#721c24}
+
+/* ══════════════════════════════════════════════════
+   RESPONSIVE — Tablet (iPad / Galaxy Tab)
+   ══════════════════════════════════════════════════ */
+@media (min-width:768px) {
+  :root { --fs-base:18px; --fs-sm:15px; --fs-xs:13px; --fs-lg:20px; --fs-xl:26px; --pad:20px; --gap:16px }
+  .header{padding:18px 24px}
+  .header svg{width:52px;height:52px}
+  .nav button{padding:14px 12px;font-size:16px}
+  .r-btn{min-width:64px;height:54px;font-size:22px}
+  .r-btn .r-lbl{font-size:11px}
+  .btn{padding:18px;font-size:18px;min-height:56px}
+  .fab{padding:16px 28px;font-size:18px;bottom:24px;right:24px}
+  .photo-thumb{width:64px;height:64px}
+  .photo-btn{font-size:16px !important;padding:10px 18px !important}
+  .dom-score .num{font-size:26px}
+  .dom-score .max{font-size:14px !important}
+  .ind-row{padding:18px 24px}
+  .rating{gap:10px;padding-left:24px}
+  .grid2{gap:16px;padding:20px}
+  .progress{height:10px;border-radius:5px;margin:0 20px 8px}
+  .badge{font-size:14px !important;padding:5px 12px}
+  input.f-inp,select.f-inp,textarea.f-inp{padding:14px 16px;font-size:18px;min-height:54px}
+  label.f-label{font-size:15px !important}
+
+  /* ── Override inline font-sizes in evaluation sections ── */
+  .dom-head div div{font-size:17px !important}
+  .dom-head div div:last-child{font-size:15px !important}
+  .dom-head span[style*="font-size:11"]{font-size:14px !important}
+  .sub-head div span{font-size:16px !important}
+  .sub-head div span:first-child{font-size:17px !important}
+  .ind-text{font-size:17px !important}
+  .ind-text span{font-size:17px !important}
+  .ind-text span:first-child{font-size:14px !important}
+
+  /* ── Summary / Export / History section text ── */
+  .card div[style*="font-size:13px"]{font-size:16px !important}
+  .card div[style*="font-size:12px"]{font-size:15px !important}
+  .card div[style*="font-size:11px"]{font-size:14px !important}
+  .card div[style*="font-size:10px"]{font-size:13px !important}
+  .card div[style*="font-size:14px"]{font-size:17px !important}
+  .card span[style*="font-size:11px"]{font-size:14px !important}
+  .card span[style*="font-size:10px"]{font-size:13px !important}
+  .card span[style*="font-size:18px"]{font-size:22px !important}
+  .export-doc div[style*="font-size:13px"]{font-size:15px !important}
+  .export-doc div[style*="font-size:12px"]{font-size:14px !important}
+  .export-doc span[style*="font-size:10"]{font-size:12px !important}
+}
+
+/* ══════════════════════════════════════════════════
+   RESPONSIVE — Desktop / Large tablet
+   ══════════════════════════════════════════════════ */
+@media (min-width:1024px) {
+  :root { --fs-base:19px; --fs-sm:16px; --fs-xs:14px; --fs-lg:22px; --fs-xl:30px; --pad:24px; --gap:18px }
+  .body{max-width:960px}
+  .header-inner{max-width:960px}
+  .header svg{width:56px;height:56px}
+  .nav{max-width:960px}
+  .nav button{font-size:18px;padding:16px 14px}
+  .r-btn{min-width:72px;height:58px;font-size:24px;border-radius:12px}
+  .r-btn .r-lbl{font-size:12px}
+  .dom-head{padding:20px 28px}
+  .dom-score .num{font-size:28px}
+  .sub-head{padding:16px 28px}
+  .ind-row{padding:20px 28px}
+  .progress{height:12px;border-radius:6px;margin:0 28px 10px}
+  .badge{font-size:15px !important;padding:6px 14px}
+  .photo-thumb{width:72px;height:72px}
+  .toast{font-size:16px;padding:14px 28px}
+
+  /* ── Override inline font-sizes even larger ── */
+  .dom-head div div{font-size:19px !important}
+  .dom-head div div:last-child{font-size:16px !important}
+  .sub-head div span{font-size:17px !important}
+  .sub-head div span:first-child{font-size:18px !important}
+  .ind-text{font-size:18px !important}
+  .ind-text span{font-size:18px !important}
+  .ind-text span:first-child{font-size:15px !important}
+  .card div[style*="font-size:13px"]{font-size:17px !important}
+  .card div[style*="font-size:12px"]{font-size:16px !important}
+  .card div[style*="font-size:11px"]{font-size:15px !important}
+  .card div[style*="font-size:14px"]{font-size:18px !important}
+  .card span[style*="font-size:11px"]{font-size:15px !important}
+  .card span[style*="font-size:18px"]{font-size:24px !important}
+}
+
+/* ══════════════════════════════════════════════════
+   RESPONSIVE — Small phone (iPhone SE, Galaxy S)
+   ══════════════════════════════════════════════════ */
+@media (max-width:380px) {
+  :root { --fs-base:15px; --fs-sm:13px; --pad:12px; --gap:10px }
+  .header h1{font-size:18px}
+  .nav button{font-size:12px;padding:10px 4px}
+  .grid2{grid-template-columns:1fr}
+  .r-btn{min-width:46px;height:42px;font-size:16px}
+  .rating{gap:5px;padding-left:10px}
+  .fab{padding:10px 16px;font-size:14px;bottom:12px;right:10px}
+}
+.status-bar{padding:8px 16px;background:#fff3cd;color:#856404;font-size:12px;text-align:center;display:none}
+.status-bar.connected{background:#d4edda;color:#155724}
+.status-bar.error{background:#f8d7da;color:#721c24}
+/* ══════ LANGUAGE TOGGLE ══════ */
+.lang-btn{background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.3);color:#fff;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .2s;font-family:inherit}
+.lang-btn:hover{background:rgba(255,255,255,.25)}
+</style>
+</head>
+<body>
+
+<!-- ══════ HEADER ══════ -->
+<div class="header">
+  <div class="header-inner">
+    <svg width="42" height="42" viewBox="0 0 120 120"><defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2d5a27"/><stop offset="100%" stop-color="#1a3a18"/></linearGradient></defs><path d="M60 8 L108 28 Q112 30 112 34 L112 60 Q112 90 60 114 Q8 90 8 60 L8 34 Q8 30 12 28 Z" fill="url(#sg)" stroke="#c9a84c" stroke-width="4"/><path d="M60 16 L100 32 L100 58 Q100 84 60 106 Q20 84 20 58 L20 32 Z" fill="none" stroke="#c9a84c" stroke-width="1.5" opacity=".6"/><text x="60" y="68" text-anchor="middle" font-family="Georgia,serif" font-size="36" font-weight="bold" fill="white" letter-spacing="3">CVN</text><path d="M42 30 L60 22 L78 30" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"/><path d="M40 82 Q50 78 60 82 Q70 78 80 82" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"/></svg>
+    <div><h1 id="h-title">${L("schoolName")}</h1><p id="h-sub">ระบบนิเทศการสอน Active Learning</p></div>
+    <button class="lang-btn" onclick="toggleLang()" id="lang-btn" style="margin-left:auto">🇬🇧 EN</button>
+  </div>
+  <div class="nav" id="nav">
+    <button class="active" onclick="switchView('form')">📝 ฟอร์ม</button>
+    <button onclick="switchView('summary')">📊 สรุปผล</button>
+    <button onclick="switchView('history')" id="nav-history">📚 ประวัติ(0)</button>
+  </div>
+</div>
+<div id="status-bar" class="status-bar"></div>
+
+<!-- ══════ BODY ══════ -->
+<div class="body" id="app"></div>
+
+<!-- ══════ FLOATING BUTTON ══════ -->
+<button class="fab" id="fab" style="display:none" onclick="switchView('summary')"></button>
+
+<!-- ══════ TOAST ══════ -->
+<div class="toast hide" id="toast"></div>
+
+<!-- ══════ HIDDEN FILE INPUT ══════ -->
+<input type="file" id="file-input" accept="image/*" capture="environment" style="display:none">
+
+<script>
+// ══════════════════════════════════════════════════════════════
+//  CONFIGURATION — ใส่ URL ของ Google Apps Script ที่นี่
+// ══════════════════════════════════════════════════════════════
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxK86vLF_-6cHK1TQrBSAVbGfWZsDIPPt6U8zd7c7Q_E1W-jmsUl2mBNxS5cpwRymGh/exec"; // ← วาง URL ที่ได้จาก Apps Script Deploy ที่นี่
+
+// ══════════════════════════════════════════════════════════════
+//  BILINGUAL SYSTEM (TH/EN)
+// ══════════════════════════════════════════════════════════════
+const UI = {
+th:{
+  schoolName:"โรงเรียนจารุวัฒนานุกูล",schoolSub:"ระบบนิเทศการสอน Active Learning",
+  navForm:"📝 ฟอร์ม",navSummary:"📊 สรุปผล",navHistory:"📚 ประวัติ",
+  generalInfo:"📋 ข้อมูลทั่วไป",teacher:"ชื่อผู้รับการนิเทศ *",position:"ตำแหน่ง",
+  subjectCode:"รหัสวิชา",subject:"ชื่อวิชา",level:"ระดับชั้น",students:"จำนวนนักเรียน",
+  date:"วันที่สอน",period:"คาบเรียน",selectPeriod:"— เลือกคาบ —",periodN:"คาบที่",
+  topic:"เรื่องที่สอน",supervisor:"ผู้นิเทศ *",visitNum:"ครั้งที่นิเทศ",selectVisit:"— เลือก —",
+  visitN:"ครั้งที่",semester:"ภาคเรียน",year:"ปีการศึกษา",
+  basic:"พื้นฐาน",star:"ดีเลิศ",scored:"ประเมินแล้ว",
+  domainN:"ด้านที่",weight:"น้ำหนัก",points:"คะแนน",raw:"ดิบ",items:"ข้อ",
+  feedback:"💬 ข้อเสนอแนะของผู้นิเทศ",
+  strengths:"🌟 จุดเด่นและแนวปฏิบัติที่ดี (Strengths & Best Practices)",
+  growth:"🔧 จุดที่ควรปรับปรุง (Areas for Growth)",
+  strengthsP:"ระบุจุดเด่นที่พบ...",growthP:"ระบุข้อเสนอแนะ...",
+  save:"💾 บันทึกผลการนิเทศ",saving:"กำลังบันทึก...",export:"📄 Export สรุปผลการนิเทศ",
+  reset:"🔄 เริ่มนิเทศรายการใหม่",copy:"📋 คัดลอกข้อความ",pdf:"📥 บันทึก PDF",
+  pdfHint:"💡 บันทึก PDF → เลือก \"Save as PDF\" ในหน้าต่าง Print",
+  back:"← กลับ",score100:"คะแนน (เต็ม 100)",qualityLevel:"ระดับคุณภาพ",
+  domainBreakdown:"📊 คะแนนรายด้าน (ถ่วงน้ำหนัก)",domainDetail:"📊 คะแนนรายด้าน",
+  photoEvidence:"📷 ภาพหลักฐาน",photoN:"ภาพ",attachPhoto:"📷 แนบรูปหลักฐาน",
+  history:"📚 ประวัติการนิเทศ",historyN:"รายการ",noHistory:"ยังไม่มีประวัติ",
+  deleteThis:"🗑️ ลบรายการนี้",clearAll:"🗑️ ล้างประวัติทั้งหมด",reload:"🔄 โหลดข้อมูลใหม่",
+  confirmDelete:"ต้องการลบรายการนี้?",confirmClear:"ต้องการล้างประวัติทั้งหมด? (ข้อมูลจะหายถาวร)",
+  exportTitle:"สรุปผลการนิเทศการสอน",teacherInfo:"📋 ข้อมูลผู้รับการนิเทศ",
+  createdAt:"สร้างเมื่อ",noScript:"⚠️ ยังไม่ได้ตั้งค่า SCRIPT_URL",
+  r5:"ยอดเยี่ยม",r4:"ดีเลิศ",r3:"ดี",r2:"ปานกลาง",r1:"กำลังพัฒนา",
+  notYet:"ยังไม่ประเมิน",name:"ชื่อ-สกุล",classLevel:"ระดับชั้น",
+  dateLabel:"วันที่",periodLabel:"คาบ",topicLabel:"เรื่อง",supervisorLabel:"ผู้นิเทศ",
+  visitLabel:"ครั้งที่",semesterLabel:"ภาคเรียน"
+},
+en:{
+  schoolName:"Charuvatananukul School",schoolSub:"Active Learning Supervision System",
+  navForm:"📝 Form",navSummary:"📊 Summary",navHistory:"📚 History",
+  generalInfo:"📋 General Information",teacher:"Teacher Name *",position:"Position",
+  subjectCode:"Subject Code",subject:"Subject",level:"Grade Level",students:"No. of Students",
+  date:"Teaching Date",period:"Period",selectPeriod:"— Select Period —",periodN:"Period",
+  topic:"Topic",supervisor:"Supervisor *",visitNum:"Visit No.",selectVisit:"— Select —",
+  visitN:"Visit",semester:"Semester",year:"Academic Year",
+  basic:"Basic",star:"Excellent",scored:"Scored",
+  domainN:"Domain",weight:"Weight",points:"pts",raw:"Raw",items:"items",
+  feedback:"💬 Supervisor Feedback",
+  strengths:"🌟 Strengths & Best Practices",
+  growth:"🔧 Areas for Growth",
+  strengthsP:"Describe strengths observed...",growthP:"Describe areas for improvement...",
+  save:"💾 Save Evaluation",saving:"Saving...",export:"📄 Export Summary",
+  reset:"🔄 Start New Evaluation",copy:"📋 Copy Text",pdf:"📥 Save PDF",
+  pdfHint:'💡 Save PDF → Select "Save as PDF" in the Print dialog',
+  back:"← Back",score100:"Score (out of 100)",qualityLevel:"Quality Level",
+  domainBreakdown:"📊 Domain Scores (Weighted)",domainDetail:"📊 Domain Scores",
+  photoEvidence:"📷 Photo Evidence",photoN:"photos",attachPhoto:"📷 Attach Photo",
+  history:"📚 Supervision History",historyN:"records",noHistory:"No records yet",
+  deleteThis:"🗑️ Delete this record",clearAll:"🗑️ Clear all history",reload:"🔄 Reload data",
+  confirmDelete:"Delete this record?",confirmClear:"Clear all history? (This cannot be undone)",
+  exportTitle:"Teaching Supervision Summary",teacherInfo:"📋 Teacher Information",
+  createdAt:"Created",noScript:"⚠️ SCRIPT_URL not configured",
+  r5:"Excellent",r4:"Very Good",r3:"Good",r2:"Fair",r1:"Needs Improvement",
+  notYet:"Not scored",name:"Name",classLevel:"Grade",
+  dateLabel:"Date",periodLabel:"Period",topicLabel:"Topic",supervisorLabel:"Supervisor",
+  visitLabel:"Visit",semesterLabel:"Semester"
+}};
+
+// English translations for EVAL data
+const EN_EVAL = {
+d:{
+1:"Learning Management through Critical Thinking & Hands-on Practice",
+2:"Use of Media, IT & Learning Resources",
+3:"Positive Classroom Management",
+4:"Systematic Assessment & Student Development",
+5:"Knowledge Sharing & Reflective Practice"
+},
+s:{
+"1.1":"Active Learning Activities for Thinking & Practice",
+"1.2":"Flexible Lesson Plans that Work in Practice",
+"1.3":"Differentiated Instruction for Diverse Learners",
+"1.4":"Skills Development: Expression, Summarization & Presentation",
+"1.5":"Applying Learning to Daily Life",
+"2.1":"Effective Use of Media & Technology in Teaching",
+"2.2":"Integration of Local Wisdom & Community Resources",
+"2.3":"Encouraging Independent Learning from Diverse Sources",
+"3.1":"Classroom Environment Supporting Active Learning",
+"3.2":"Positive Interaction-Based Classroom Management",
+"3.3":"Psychologically Safe & Collaborative Learning Environment",
+"3.4":"Transition Management & Time Efficiency",
+"4.1":"Continuous Monitoring & Quality Assessment",
+"4.2":"Appropriate Assessment Tools & Methods",
+"4.3":"Student Participation in Assessment",
+"4.4":"Effective Feedback for Learning Development",
+"5.1":"Knowledge Sharing & Experience Exchange",
+"5.2":"Using Feedback for Teaching Improvement",
+"5.3":"Listening to Student Voice & Professional Development"
+},
+i:{
+"1.1.1":"Students engage in critical thinking, problem-solving, or hands-on activities",
+"1.1.2":"Clear identification of Active Learning methods (e.g., Think-Pair-Share, Inquiry, PBL)",
+"1.1.3":"Students are actively engaged ≥ 50% of class time",
+"1.1.4":"Activities clearly align with indicators and learning objectives",
+"1.1.5":"Students generate their own questions and problems",
+"1.2.1":"Teaching steps flow smoothly according to the lesson plan",
+"1.2.2":"Appropriate time management across activity phases (intro-teach-wrap up)",
+"1.2.3":"Teacher adapts plan during class (Responsive Teaching) when needed",
+"1.3.1":"Flexible activities, reduced content, or additional support for slow learners/special needs",
+"1.3.2":"Enrichment activities for advanced learners",
+"1.3.3":"Students have choices in demonstrating learning (UDL) — write/draw/speak/do",
+"1.4.1":"Open-ended questions stimulating discussion, debate, and opinion sharing",
+"1.4.2":"Teacher uses Wait Time (3-5 seconds) after asking questions",
+"1.4.3":"Students summarize knowledge independently (Mind map, verbal summary, Exit Ticket)",
+"1.5.1":"Real-life examples, simulations, or problems connected to students' lives",
+"1.5.2":"Students connect content to personal experiences or community context",
+"2.1.1":"Media/technology is clear, engaging, and helps simplify difficult content",
+"2.1.2":"Teacher demonstrates proficiency with technology without delays",
+"2.2.1":"Integration of community data, context, or local wisdom into lessons",
+"2.3.1":"Students independently use media and resources for research",
+"2.3.2":"Teacher teaches Information Literacy — source verification, fact-checking",
+"3.1.1":"Desk/space arrangement supports activity formats (small groups, learning stations)",
+"3.1.2":"Classroom has ready-to-use materials accessible to students",
+"3.2.1":"Teacher uses friendly words, tone, and gestures with positive reinforcement",
+"3.2.2":"Teacher engages all students equally, not just front row or high achievers",
+"3.2.3":"Classroom norms established with student participation",
+"3.3.1":"Students feel safe to answer and ask without fear (Psychological Safety)",
+"3.3.2":"Students help each other; disruptive behavior managed gently",
+"3.3.3":"Most students show on-task behavior during activities (≥ 80%)",
+"3.4.1":"Teacher manages activity transitions quickly and clearly without wasted time",
+"3.4.2":"Students understand and respond to teacher's signals promptly",
+"4.1.1":"Teacher actively monitors student work throughout the lesson",
+"4.1.2":"Teacher adjusts teaching in real-time based on observations (Responsive Teaching)",
+"4.2.1":"Clear Formative Assessment tools (worksheets, Exit Tickets, comprehension checks)",
+"4.2.2":"Students know assessment criteria (Rubric/Success Criteria) before starting work",
+"4.3.1":"Students conduct self-assessment",
+"4.3.2":"Constructive peer assessment activities",
+"4.4.1":"Teacher provides Actionable Feedback — specific praise and correction points",
+"4.4.2":"Feedback connects to learning objectives set at the beginning of class",
+"5.1.1":"Teacher references PLC group input or willingly exchanges with supervisor",
+"5.1.2":"Evidence that teacher applied recommendations from previous supervision",
+"5.2.1":"Teacher reflects on strengths and weaknesses of the lesson comprehensively",
+"5.2.2":"Teacher has clear plans for improving the next lesson (Action Plan)",
+"5.3.1":"Teacher has mechanisms for student feedback (short surveys, sticky notes)"
+}};
+
+function L(key){return UI[state.lang]?.[key]||UI.th[key]||key}
+function LE(type,id){
+  if(state.lang==="th") return null;
+  if(type==="d") return EN_EVAL.d[id];
+  if(type==="s") return EN_EVAL.s[id];
+  if(type==="i") return EN_EVAL.i[id];
+  return null;
+}
+function TD(d){return state.lang==="en"?(EN_EVAL.d[d.id]||d.title):d.title}
+function TS(s){return state.lang==="en"?(EN_EVAL.s[s.id]||s.title):s.title}
+function TI(i){return state.lang==="en"?(EN_EVAL.i[i.id]||i.t):i.t}
+function TQ(q){
+  const map={ยอดเยี่ยม:L("r5"),ดีเลิศ:L("r4"),ดี:L("r3"),ปานกลาง:L("r2"),"กำลังพัฒนา":L("r1")};
+  return map[q]||q;
+}
+
+function toggleLang(){
+  state.lang=state.lang==="th"?"en":"th";
+  document.getElementById("lang-btn").innerHTML=state.lang==="th"?"🇬🇧 EN":"🇹🇭 TH";
+  document.getElementById("h-title").textContent=L("schoolName");
+  document.getElementById("h-sub").textContent=L("schoolSub");
+  render();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════════════════════════════
+const EVAL=[
+{id:1,title:"จัดการเรียนรู้ผ่านกระบวนการคิดและปฏิบัติจริง",icon:"🧠",w:30,subs:[
+{id:"1.1",title:"จัดกิจกรรมที่เน้นให้ผู้เรียนได้คิดและปฏิบัติจริง (Active Learning)",inds:[
+{id:"1.1.1",t:"มีกิจกรรมที่นักเรียนได้ลงมือคิดวิเคราะห์ แก้ปัญหา หรือลงมือทำด้วยตนเอง",y:"b"},
+{id:"1.1.2",t:"ระบุรูปแบบ Active Learning ที่ใช้ได้ชัดเจน เช่น Think-Pair-Share, Inquiry, PBL",y:"b"},
+{id:"1.1.3",t:"นักเรียนมีบทบาทเชิงรุก (Active) ≥ 50% ของเวลาในคาบ",y:"b"},
+{id:"1.1.4",t:"กิจกรรมตอบสนองตัวชี้วัดและวัตถุประสงค์ของบทเรียนอย่างชัดเจน",y:"b"},
+{id:"1.1.5",t:"นักเรียนได้ตั้งคำถามหรือตั้งโจทย์ปัญหาด้วยตนเอง",y:"s"}]},
+{id:"1.2",title:"มีแผนการจัดการเรียนรู้ที่นำไปจัดกิจกรรมได้จริงและยืดหยุ่น",inds:[
+{id:"1.2.1",t:"ขั้นตอนการสอนสอดคล้องและลื่นไหลตามแผนการสอน",y:"b"},
+{id:"1.2.2",t:"การบริหารเวลาในแต่ละขั้นกิจกรรม (นำ-สอน-สรุป) เหมาะสม",y:"b"},
+{id:"1.2.3",t:"ครูปรับแผนระหว่างคาบได้ (Responsive Teaching) เมื่อสถานการณ์เปลี่ยน",y:"s"}]},
+{id:"1.3",title:"ออกแบบการเรียนรู้สำหรับผู้เรียนที่หลากหลาย (Differentiated Instruction)",inds:[
+{id:"1.3.1",t:"มีการยืดหยุ่นกิจกรรม ลดทอนเนื้อหา หรือเพิ่มการดูแลนักเรียนกลุ่มเรียนช้า/เด็กพิเศษ",y:"b"},
+{id:"1.3.2",t:"มีกิจกรรมท้าทาย (Enrichment) สำหรับกลุ่มนักเรียนที่เรียนรู้ไว",y:"b"},
+{id:"1.3.3",t:"นักเรียนมีทางเลือกในการแสดงผลงาน (UDL) เช่น เขียน / วาด / พูด / ทำ",y:"s"}]},
+{id:"1.4",title:"ฝึกทักษะให้ผู้เรียนได้แสดงออก สรุปองค์ความรู้ และนำเสนอผลงาน",inds:[
+{id:"1.4.1",t:"ครูใช้คำถามปลายเปิดกระตุ้นให้นักเรียนอภิปราย ถกเถียง แชร์ความคิดเห็น",y:"b"},
+{id:"1.4.2",t:"ครูใช้เทคนิค Wait Time (รอ 3-5 วินาที) หลังตั้งคำถาม",y:"b"},
+{id:"1.4.3",t:"มีช่วงให้นักเรียนสรุปความรู้ด้วยตนเอง (Mind map, พูดสรุป, Exit Ticket)",y:"b"}]},
+{id:"1.5",title:"จัดกิจกรรมให้ผู้เรียนนำไปประยุกต์ใช้ในชีวิตประจำวันได้",inds:[
+{id:"1.5.1",t:"ครูยกตัวอย่าง สถานการณ์จำลอง หรือตั้งโจทย์ปัญหาที่เชื่อมโยงชีวิตจริง",y:"b"},
+{id:"1.5.2",t:"นักเรียนเชื่อมโยงเนื้อหากับประสบการณ์ตนเองหรือบริบทชุมชนได้",y:"s"}]}
+]},
+{id:2,title:"ใช้สื่อ เทคโนโลยีสารสนเทศ และแหล่งเรียนรู้ที่เอื้อต่อการเรียนรู้",icon:"💻",w:20,subs:[
+{id:"2.1",title:"ใช้สื่อและเทคโนโลยีสารสนเทศในการจัดการเรียนรู้",inds:[
+{id:"2.1.1",t:"สื่อหรือเทคโนโลยีมีความชัดเจน น่าสนใจ ช่วยให้เข้าใจเนื้อหาง่ายขึ้น",y:"b"},
+{id:"2.1.2",t:"ครูมีความเชี่ยวชาญในการควบคุมเทคโนโลยี ไม่สะดุดหรือเสียเวลา",y:"b"}]},
+{id:"2.2",title:"ใช้แหล่งเรียนรู้และภูมิปัญญาท้องถิ่นในการจัดการเรียนรู้",inds:[
+{id:"2.2.1",t:"มีการอ้างอิงข้อมูล บริบทชุมชน หรือภูมิปัญญามาบูรณาการในบทเรียน",y:"b"}]},
+{id:"2.3",title:"สร้างโอกาสให้ผู้เรียนแสวงหาความรู้ด้วยตนเองจากสื่อหลากหลาย",inds:[
+{id:"2.3.1",t:"นักเรียนได้ลงมือใช้สื่อ ค้นคว้าข้อมูลด้วยตนเอง",y:"b"},
+{id:"2.3.2",t:"ครูสอน Information Literacy เช่น ตรวจสอบแหล่งที่มา แยกข้อมูลจริง/ปลอม",y:"s"}]}
+]},
+{id:3,title:"มีการบริหารจัดการชั้นเรียนเชิงบวก",icon:"🏫",w:15,subs:[
+{id:"3.1",title:"จัดสภาพแวดล้อมและพื้นที่ห้องเรียนเอื้อต่อ Active Learning",inds:[
+{id:"3.1.1",t:"การจัดโต๊ะ/พื้นที่รองรับรูปแบบกิจกรรม เช่น กลุ่มย่อย, Learning Stations",y:"b"},
+{id:"3.1.2",t:"ห้องเรียนมีสื่อ/อุปกรณ์พร้อมใช้งาน นักเรียนเข้าถึงได้สะดวก",y:"b"}]},
+{id:"3.2",title:"บริหารจัดการชั้นเรียนโดยเน้นปฏิสัมพันธ์เชิงบวก",inds:[
+{id:"3.2.1",t:"ครูใช้คำพูด น้ำเสียง ท่าทางเป็นมิตร มีการชมเชย เสริมแรงทางบวก",y:"b"},
+{id:"3.2.2",t:"ครูทั่วถึง สบตานักเรียนอย่างกระจาย ไม่กระจุกหน้าห้องหรือเด็กเก่ง",y:"b"},
+{id:"3.2.3",t:"มีข้อตกลงชั้นเรียน (Classroom Norms) ที่นักเรียนมีส่วนร่วมกำหนด",y:"s"}]},
+{id:"3.3",title:"สร้างบรรยากาศปลอดภัยทางจิตวิทยาและเรียนรู้ร่วมกันอย่างมีความสุข",inds:[
+{id:"3.3.1",t:"นักเรียนกล้าตอบ กล้าถาม ไม่กลัวโดนดุ/เยาะ (Psychological Safety)",y:"b"},
+{id:"3.3.2",t:"นักเรียนช่วยเหลือกัน จัดระเบียบพฤติกรรมรบกวนได้นุ่มนวล",y:"b"},
+{id:"3.3.3",t:"นักเรียนส่วนใหญ่มีพฤติกรรม On-task ระหว่างทำกิจกรรม (≥ 80%)",y:"b"}]},
+{id:"3.4",title:"บริหารเวลาและการเปลี่ยนกิจกรรม (Transition Management)",inds:[
+{id:"3.4.1",t:"ครูบริหารการย้ายกิจกรรมรวดเร็ว ชัดเจน ไม่สูญเสียเวลาโดยไม่จำเป็น",y:"b"},
+{id:"3.4.2",t:"นักเรียนเข้าใจสัญญาณ/คำสั่งของครูและปรับพฤติกรรมได้ทันท่วงที",y:"b"}]}
+]},
+{id:4,title:"ตรวจสอบและประเมินผู้เรียนอย่างเป็นระบบ นำผลมาพัฒนาผู้เรียน",icon:"📊",w:20,subs:[
+{id:"4.1",title:"ตรวจสอบและประเมินคุณภาพการจัดการเรียนรู้อย่างต่อเนื่อง",inds:[
+{id:"4.1.1",t:"ครูคอยเดินตรวจ สังเกตการทำงานของนักเรียนทุกระยะ",y:"b"},
+{id:"4.1.2",t:"ครูนำข้อมูลจากการสังเกตมาปรับการสอนทันที (Real-time Responsive)",y:"b"}]},
+{id:"4.2",title:"ใช้เครื่องมือและวิธีการวัดประเมินผลที่เหมาะสมกับเป้าหมาย",inds:[
+{id:"4.2.1",t:"มีเครื่องมือ Formative Assessment ชัดเจน เช่น ใบงานย่อย, Exit Ticket",y:"b"},
+{id:"4.2.2",t:"นักเรียนทราบเกณฑ์ประเมิน (Rubric/Success Criteria) ก่อนลงมือทำงาน",y:"b"}]},
+{id:"4.3",title:"เปิดโอกาสให้ผู้เรียนมีส่วนร่วมในการวัดและประเมินผล",inds:[
+{id:"4.3.1",t:"มีการให้นักเรียนประเมินผลงานตนเอง (Self-assessment)",y:"b"},
+{id:"4.3.2",t:"มีการประเมินโดยเพื่อน (Peer-assessment) แบบสร้างสรรค์",y:"b"}]},
+{id:"4.4",title:"ให้ข้อมูลย้อนกลับแก่ผู้เรียนเพื่อพัฒนาการเรียนรู้",inds:[
+{id:"4.4.1",t:"ครูให้ Actionable Feedback: บอกได้ว่าเด็กดีตรงไหน ต้องแก้ตรงไหน",y:"b"},
+{id:"4.4.2",t:"Feedback เชื่อมโยงกับเป้าหมายการเรียนรู้ที่ตั้งไว้ตั้งแต่ต้นคาบ",y:"s"}]}
+]},
+{id:5,title:"แลกเปลี่ยนเรียนรู้และสะท้อนกลับเพื่อพัฒนาการจัดการเรียนรู้",icon:"🔄",w:15,subs:[
+{id:"5.1",title:"ครูและผู้มีส่วนเกี่ยวข้องร่วมแลกเปลี่ยนความรู้และประสบการณ์",inds:[
+{id:"5.1.1",t:"ครูระบุถึงการได้คำแนะนำจากกลุ่ม PLC หรือพร้อมแลกเปลี่ยนกับผู้นิเทศ",y:"b"},
+{id:"5.1.2",t:"มีหลักฐานว่าครูนำข้อเสนอแนะจากการนิเทศครั้งก่อนมาปรับใช้จริง",y:"b"}]},
+{id:"5.2",title:"นำข้อมูลป้อนกลับไปปรับปรุงและพัฒนาการจัดการเรียนรู้",inds:[
+{id:"5.2.1",t:"ครูสะท้อนจุดเด่น-จุดอ่อนของคาบเรียนนี้ได้ด้วยตนเองอย่างรอบด้าน",y:"b"},
+{id:"5.2.2",t:"ครูมีแนวทางชัดเจนในการปรับปรุงคาบถัดไป (Action Plan)",y:"b"}]},
+{id:"5.3",title:"รับฟัง Student Voice และพัฒนาวิชาชีพอย่างต่อเนื่อง",inds:[
+{id:"5.3.1",t:"ครูมีกลไกรับ Feedback จากนักเรียน เช่น แบบสอบถามสั้น, Sticky note",y:"b"}]}
+]}];
+
+const ALL_IND=EVAL.flatMap(d=>d.subs.flatMap(s=>s.inds));
+const QLVL=[{mn:90,l:"ยอดเยี่ยม",c:"#15803d",bg:"#dcfce7",e:"🏆",k:"r5"},{mn:80,l:"ดีเลิศ",c:"#1d4ed8",bg:"#dbeafe",e:"🌟",k:"r4"},{mn:70,l:"ดี",c:"#7c3aed",bg:"#ede9fe",e:"👍",k:"r3"},{mn:60,l:"ปานกลาง",c:"#c2410c",bg:"#ffedd5",e:"📝",k:"r2"},{mn:0,l:"กำลังพัฒนา",c:"#dc2626",bg:"#fef2f2",e:"🌱",k:"r1"}];
+const getQ=p=>QLVL.find(l=>p>=l.mn)||QLVL[4];
+function QL(q){return L(q.k)} // translated quality label
+const SC={5:"#15803d",4:"#1d4ed8",3:"#7c3aed",2:"#c2410c",1:"#dc2626"};
+const SL_TH={5:"ยอดเยี่ยม",4:"ดีเลิศ",3:"ดี",2:"ปานกลาง",1:"พัฒนา"};
+const SL_EN={5:"Excellent",4:"V.Good",3:"Good",4:"V.Good",2:"Fair",1:"Improve"};
+function SL(v){return state.lang==="en"?SL_EN[v]:SL_TH[v]}
+
+// ══════ STATE ══════
+let state = {
+  view: "form",
+  scores: {},
+  info: {teacher:"",position:"",subject:"",subjectCode:"",level:"",students:"",date:"",period:"",topic:"",supervisor:"",visitNum:"",semester:"",year:""},
+  fb: {strengths:"",growth:""},
+  photos: {}, // {domainId: [{name, data}]}
+  expDom: {1:true},
+  expSub: {},
+  records: [],
+  saving: false,
+  uploadTarget: null,
+  histDetail: null,
+  lang: "th"
+};
+
+// ══════ CALC ══════
+function calcDom(dId,sc){
+  const d=EVAL.find(x=>x.id===dId);
+  const ids=d.subs.flatMap(s=>s.inds.map(i=>i.id));
+  const raw=ids.reduce((a,id)=>a+(sc[id]||0),0);
+  const mx=ids.length*5;
+  const scored=ids.filter(id=>sc[id]).length;
+  return{raw,mx,scored,total:ids.length,wt:mx>0?(raw/mx)*d.w:0,w:d.w};
+}
+function calcAll(sc){return EVAL.reduce((a,d)=>a+calcDom(d.id,sc).wt,0)}
+function scoredCount(){return Object.keys(state.scores).length}
+
+// ══════ TOAST ══════
+function toast(msg){
+  const el=document.getElementById("toast");
+  el.textContent=msg;el.classList.remove("hide");
+  clearTimeout(el._t);el._t=setTimeout(()=>el.classList.add("hide"),2500);
+}
+
+// ══════ RENDER ══════
+function render(){
+  const app=document.getElementById("app");
+  if(state.view==="form") app.innerHTML=renderForm();
+  else if(state.view==="summary") app.innerHTML=renderSummary();
+  else if(state.view==="export") app.innerHTML=renderExport();
+  else if(state.view==="history") app.innerHTML=renderHistory();
+  updateNav();updateFab();bindEvents();
+}
+
+function switchView(v){state.view=v;if(v!=="history")state.histDetail=null;render();window.scrollTo(0,0)}
+function updateNav(){
+  const btns=document.querySelectorAll(".nav button");
+  const views=["form","summary","history"];
+  const labels=[L("navForm"),L("navSummary"),L("navHistory")+"("+state.records.length+")"];
+  btns.forEach((b,i)=>{b.classList.toggle("active",state.view===views[i]||(state.view==="export"&&i===1));b.textContent=labels[i]});
+}
+function updateFab(){
+  const fab=document.getElementById("fab");
+  const n=scoredCount();
+  if(state.view==="form"&&n>0){
+    const tw=calcAll(state.scores);const q=getQ(tw);
+    fab.style.display="flex";fab.innerHTML=`${q.e} ${tw.toFixed(1)}/100 → ${L("navSummary").replace("📊 ","")}`;
+  }else{fab.style.display="none"}
+}
+
+// ══════ FORM VIEW ══════
+function renderForm(){
+  const info=state.info;
+  let h=`<div class="card"><div class="card-head">${L("generalInfo")}</div><div class="grid2">`;
+  const fields=[
+    ["teacher",L("teacher"),"text"],["position",L("position"),"text"],
+    ["subjectCode",L("subjectCode"),"text"],["subject",L("subject"),"text"],
+    ["level",L("level"),"text"],["students",L("students"),"text"],
+  ];
+  fields.forEach(([k,l,t])=>{
+    h+=`<div><label class="f-label">${l}</label><input class="f-inp" data-info="${k}" value="${info[k]||""}" placeholder="${l.replace(' *','')}" type="${t}"></div>`;
+  });
+  h+=`<div><label class="f-label">${L("date")}</label><input class="f-inp" data-info="date" type="date" value="${info.date||""}"></div>`;
+  h+=`<div><label class="f-label">${L("period")}</label><select class="f-inp" data-info="period"><option value="">${L("selectPeriod")}</option>${[1,2,3,4,5,6].map(n=>`<option value="${n}" ${info.period==n?"selected":""}>${L("periodN")} ${n}</option>`).join("")}</select></div>`;
+  h+=`<div class="full"><label class="f-label">${L("topic")}</label><input class="f-inp" data-info="topic" value="${info.topic||""}" placeholder="${L("topic")}"></div>`;
+  h+=`<div><label class="f-label">${L("supervisor")}</label><input class="f-inp" data-info="supervisor" value="${info.supervisor||""}"></div>`;
+  h+=`<div><label class="f-label">${L("visitNum")}</label><select class="f-inp" data-info="visitNum"><option value="">${L("selectVisit")}</option>${[1,2,3,4,5,6].map(n=>`<option value="${n}" ${info.visitNum==n?"selected":""}>${L("visitN")} ${n}</option>`).join("")}</select></div>`;
+  h+=`<div><label class="f-label">${L("semester")}</label><select class="f-inp" data-info="semester"><option value="">—</option><option value="1" ${info.semester==="1"?"selected":""}>1</option><option value="2" ${info.semester==="2"?"selected":""}>2</option></select></div>`;
+  h+=`<div><label class="f-label">${L("year")}</label><input class="f-inp" data-info="year" value="${info.year||""}" placeholder="2568"></div>`;
+  h+=`</div></div>`;
+
+  // Legend
+  h+=`<div class="card" style="padding:10px 14px;display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:#4a5e4a;align-items:center">
+    <span>⬤ <b>${L("basic")}</b></span><span style="color:#c2410c">★ <b>${L("star")}</b></span>
+    <span style="margin-left:auto;color:#9ca3af;font-size:11px">${L("scored")} ${scoredCount()}/${ALL_IND.length}</span></div>`;
+
+  // Domains
+  EVAL.forEach(d=>{
+    const dc=calcDom(d.id,state.scores);
+    const on=state.expDom[d.id];
+    const dp=dc.w>0?(dc.wt/dc.w*100):0;
+    const pc=dp>=80?"var(--r5)":dp>=60?"var(--r2)":"var(--r1)";
+    h+=`<div class="card" style="border:2px solid ${on?"var(--g2)":"transparent"}">`;
+    h+=`<div class="dom-head ${on?"on":""}" onclick="toggleDom(${d.id})"><span style="font-size:22px">${d.icon}</span><div style="flex:1"><div style="font-size:13px;font-weight:700">${L("domainN")} ${d.id} <span style="font-weight:400;font-size:11px;opacity:.8">(${L("weight")} ${d.w} ${L("points")})</span></div><div style="font-size:11.5px;opacity:.85;margin-top:1px">${TD(d)}</div></div><div class="dom-score"><div class="num">${dc.wt.toFixed(1)}</div><div class="max">/${d.w}</div></div><span style="font-size:14px;transition:transform .2s;transform:rotate(${on?180:0}deg)">▼</span></div>`;
+    h+=`<div class="progress"><div class="progress-fill" style="width:${dp}%;background:${pc}"></div></div>`;
+    h+=`<div style="display:flex;justify-content:space-between;font-size:10px;color:#6b7280;padding:0 16px 4px"><span>${L("raw")} ${dc.raw}/${dc.mx}</span><span>${dc.scored}/${dc.total} ${L("items")}</span></div>`;
+
+    if(on){
+      d.subs.forEach(s=>{
+        const sOn=state.expSub[s.id];
+        const sCnt=s.inds.filter(i=>state.scores[i.id]).length;
+        const sRaw=s.inds.reduce((a,i)=>a+(state.scores[i.id]||0),0);
+        const sMx=s.inds.length*5;
+        h+=`<div class="sub-head ${sOn?"on":""}" onclick="toggleSub('${s.id}')"><div style="flex:1"><span style="font-size:12.5px;font-weight:700;color:var(--g1)">${s.id} </span><span style="font-size:12px;color:#4a5e4a">${TS(s)}</span></div><div style="display:flex;align-items:center;gap:6px;flex-shrink:0"><span class="badge" style="background:${sCnt===s.inds.length?"#dcfce7":"#fef2f2"};color:${sCnt===s.inds.length?"#15803d":"#dc2626"}">${sCnt===s.inds.length?sRaw+"/"+sMx:sCnt+"/"+s.inds.length}</span><span style="font-size:11px;color:#9ca3af;transition:transform .2s;transform:rotate(${sOn?180:0}deg)">▼</span></div></div>`;
+
+        if(sOn){
+          s.inds.forEach((ind,idx)=>{
+            const v=state.scores[ind.id];
+            const cls=ind.y==="s"?"star":idx%2===0?"even":"";
+            h+=`<div class="ind-row ${cls}"><div class="ind-text"><span style="flex-shrink:0;font-size:11px;margin-top:2px">${ind.y==="s"?'<span style="color:#c2410c">★</span>':'<span style="color:var(--g2)">⬤</span>'}</span><span>${TI(ind)}</span></div><div class="rating">`;
+            [5,4,3,2,1].forEach(val=>{
+              const sel=v===val;
+              h+=`<div class="r-btn ${sel?"sel":""}" style="${sel?`border-color:${SC[val]};background:${SC[val]}`:""}" onclick="setScore('${ind.id}',${val})">${val}<span class="r-lbl">${SL(val)}</span></div>`;
+            });
+            if(v) h+=`<span style="margin-left:4px;font-size:11px;color:${SC[v]};font-weight:600">✓</span>`;
+            h+=`</div></div>`;
+          });
+        }
+      });
+      // Photos
+      const photos=state.photos[d.id]||[];
+      h+=`<div class="photo-bar"><button class="photo-btn" onclick="uploadPhoto(${d.id})">${L("attachPhoto")}</button>`;
+      photos.forEach((p,i)=>{
+        h+=`<div style="position:relative"><img src="${p.data}" class="photo-thumb"><button class="photo-rm" onclick="removePhoto(${d.id},${i})">✕</button></div>`;
+      });
+      h+=`</div>`;
+    }
+    h+=`</div>`;
+  });
+
+  // Feedback
+  h+=`<div class="card"><div class="card-head">${L("feedback")}</div><div style="padding:14px;display:flex;flex-direction:column;gap:14px">
+    <div><label style="font-size:13px;font-weight:700;color:#15803d;margin-bottom:6px;display:block">${L("strengths")}</label><textarea class="f-inp" data-fb="strengths" placeholder="${L("strengthsP")}">${state.fb.strengths}</textarea></div>
+    <div><label style="font-size:13px;font-weight:700;color:#c2410c;margin-bottom:6px;display:block">${L("growth")}</label><textarea class="f-inp" data-fb="growth" placeholder="${L("growthP")}">${state.fb.growth}</textarea></div>
+  </div></div>`;
+  return h;
+}
+
+// ══════ SUMMARY VIEW ══════
+function renderSummary(){
+  const tw=calcAll(state.scores);const q=getQ(tw);
+  let h=`<div class="card" style="text-align:center;padding:28px 16px;background:linear-gradient(135deg,${q.bg},#fff)">
+    <div style="font-size:44px">${q.e}</div>
+    <div style="font-size:52px;font-weight:900;color:${q.c};line-height:1">${tw.toFixed(1)}</div>
+    <div style="font-size:13px;color:#6b7280">${L("score100")}</div>
+    <div style="font-size:20px;font-weight:700;color:${q.c};margin-top:4px">${QL(q)}</div>
+    ${state.info.teacher?`<div style="font-size:14px;color:#4a5e4a;margin-top:12px"><b>${state.info.teacher}</b> | ${L("supervisorLabel")}: <b>${state.info.supervisor}</b></div>`:""}
+  </div>`;
+  // Domain breakdown
+  h+=`<div class="card"><div style="padding:12px 16px;border-bottom:1px solid #e8efe8;font-weight:700;font-size:15px;color:var(--g1)">${L("domainBreakdown")}</div>`;
+  EVAL.forEach(d=>{
+    const dc=calcDom(d.id,state.scores);const dp=dc.w>0?(dc.wt/dc.w*100):0;const dq=getQ(dp);
+    h+=`<div style="padding:12px 16px;border-bottom:1px solid #f0f5f0"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:13px;font-weight:600">${d.icon} ${L("domainN")} ${d.id} <span style="font-weight:400;color:#9ca3af;font-size:11px">(${d.w})</span></span><div style="display:flex;align-items:center;gap:6px"><span style="font-size:15px;font-weight:800;color:${dq.c}">${dc.wt.toFixed(1)}/${d.w}</span><span class="badge" style="background:${dq.bg};color:${dq.c}">${QL(dq)}</span></div></div><div class="progress"><div class="progress-fill" style="width:${dp}%;background:${dq.c}"></div></div></div>`;
+  });
+  h+=`</div>`;
+  // Feedback
+  if(state.fb.strengths||state.fb.growth){
+    h+=`<div class="card"><div style="padding:12px 16px;border-bottom:1px solid #e8efe8;font-weight:700;font-size:15px;color:var(--g1)">💬 ${L("feedback").replace("💬 ","")}</div>`;
+    if(state.fb.strengths) h+=`<div style="padding:10px 16px;border-bottom:1px solid #f0f5f0"><div style="font-size:12px;font-weight:700;color:#15803d;margin-bottom:3px">🌟 ${L("strengths").split("(")[0].replace("🌟 ","")}</div><div style="font-size:13px;line-height:1.6">${state.fb.strengths}</div></div>`;
+    if(state.fb.growth) h+=`<div style="padding:10px 16px"><div style="font-size:12px;font-weight:700;color:#c2410c;margin-bottom:3px">🔧 ${L("growth").split("(")[0].replace("🔧 ","")}</div><div style="font-size:13px;line-height:1.6">${state.fb.growth}</div></div>`;
+    h+=`</div>`;
+  }
+  // Photos
+  const allP=EVAL.flatMap(d=>(state.photos[d.id]||[]).map(p=>p.data));
+  if(allP.length>0){
+    h+=`<div class="card"><div style="padding:12px 16px;border-bottom:1px solid #e8efe8;font-weight:700;font-size:15px;color:var(--g1)">📷 ${L("photoEvidence")} (${allP.length} ${L("photoN")})</div><div style="padding:12px 16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;max-height:200px;overflow:hidden">`;
+    allP.forEach(src=>{h+=`<img src="${src}" style="width:100%;height:90px;object-fit:cover;border-radius:8px;border:2px solid #d1e0d1">`;});
+    h+=`</div></div>`;
+  }
+  // Buttons
+  h+=`<div class="btn-row"><button class="btn btn-primary" onclick="saveToSheet()" ${state.saving?"disabled":""}>${state.saving?'<span class="spinner"></span> '+L("saving"):L("save")}</button></div>`;
+  h+=`<button class="btn btn-outline" style="margin-bottom:8px" onclick="switchView('export')">${L("export")}</button>`;
+  h+=`<button class="btn btn-danger" style="margin-bottom:16px" onclick="resetForm()">${L("reset")}</button>`;
+  if(!SCRIPT_URL){h+=`<div style="padding:12px;background:#fff3cd;border-radius:8px;font-size:12px;color:#856404;text-align:center">⚠️ ยังไม่ได้เชื่อมต่อ Google Sheets — กรุณาใส่ SCRIPT_URL ในไฟล์ index.html</div>`;}
+  return h;
+}
+
+// ══════ EXPORT VIEW ══════
+function renderExport(){
+  const sc=state.scores;const inf=state.info;const fb=state.fb;
+  const tw=calcAll(sc);const q=getQ(tw);
+  let h=`<button class="btn btn-outline no-print" style="width:auto;padding:8px 14px;margin-bottom:10px;font-size:13px" onclick="switchView('summary')">${L("back")}</button>`;
+  h+=`<div class="export-doc" id="print-area">`;
+  // Header
+  h+=`<div style="background:linear-gradient(135deg,var(--g1),var(--g2));color:#fff;padding:20px 16px;text-align:center"><div style="font-size:18px;font-weight:800">${L("exportTitle")}</div><div style="font-size:12px;opacity:.8">${L("schoolName")} | Active Learning</div></div>`;
+  // Info
+  h+=`<div style="padding:14px 16px;border-bottom:2px solid #e8efe8"><div style="font-size:14px;font-weight:700;color:var(--g1);margin-bottom:10px">${L("teacherInfo")}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;font-size:13px">
+    <div><span style="color:#6b7280">${L("name")}:</span> <b>${inf.teacher||"-"}</b></div><div><span style="color:#6b7280">${L("position")}:</span> ${inf.position||"-"}</div>
+    <div><span style="color:#6b7280">${L("subject")}:</span> ${inf.subjectCode?inf.subjectCode+" ":""}${inf.subject||"-"}</div><div><span style="color:#6b7280">${L("classLevel")}:</span> ${inf.level||"-"} (${inf.students||"-"} คน)</div>
+    <div><span style="color:#6b7280">${L("dateLabel")}:</span> ${inf.date||"-"}</div><div><span style="color:#6b7280">${L("periodLabel")}:</span> ${inf.period?L("periodN")+" "+inf.period:"-"}</div>
+    <div><span style="color:#6b7280">${L("topicLabel")}:</span> ${inf.topic||"-"}</div><div><span style="color:#6b7280">${L("supervisorLabel")}:</span> <b>${inf.supervisor||"-"}</b></div>
+    <div><span style="color:#6b7280">${L("visitLabel")}:</span> ${inf.visitNum||"-"}</div><div><span style="color:#6b7280">${L("semesterLabel")}:</span> ${inf.semester||"-"}/${inf.year||"-"}</div>
+  </div></div>`;
+  // Score Hero
+  h+=`<div style="text-align:center;padding:20px 16px;background:${q.bg};border-bottom:2px solid #e8efe8"><div style="font-size:40px">${q.e}</div><div style="font-size:48px;font-weight:900;color:${q.c}">${tw.toFixed(1)}<span style="font-size:20px;font-weight:400">/100</span></div><div style="font-size:18px;font-weight:700;color:${q.c}">${L("qualityLevel")}: ${QL(q)}</div></div>`;
+  // Domain detail
+  h+=`<div style="padding:14px 16px"><div style="font-size:14px;font-weight:700;color:var(--g1);margin-bottom:10px">📊 ${L("domainDetail")}</div>`;
+  EVAL.forEach(d=>{
+    const dc=calcDom(d.id,sc);const dp=d.w>0?(dc.wt/d.w*100):0;const dq=getQ(dp);
+    h+=`<div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:13px;font-weight:700">${d.icon} ${L("domainN")} ${d.id} <span style="font-weight:400;color:#9ca3af;font-size:11px">(${d.w})</span></span><span style="font-size:14px;font-weight:800;color:${dq.c}">${dc.wt.toFixed(1)}/${d.w}</span></div>`;
+    h+=`<div style="height:8px;border-radius:4px;background:#e8efe8;margin-bottom:6px"><div style="height:100%;border-radius:4px;background:${dq.c};width:${dp}%"></div></div>`;
+    d.subs.forEach(s=>{
+      const sR=s.inds.reduce((a,i)=>a+(sc[i.id]||0),0);const sM=s.inds.length*5;
+      h+=`<div style="padding-left:12px;margin-bottom:6px"><div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:3px">${s.id} ${TS(s)} <span style="color:#9ca3af">(${sR}/${sM})</span></div><div style="display:flex;flex-wrap:wrap;gap:3px;padding-left:8px">`;
+      s.inds.forEach(i=>{const v=sc[i.id];h+=`<span style="font-size:10.5px;padding:2px 6px;border-radius:4px;border:1px solid ${v?SC[v]:"#d4d4d8"};color:${v?SC[v]:"#9ca3af"};font-weight:600">${i.y==="s"?"★":"⬤"}${v||"-"}/5</span>`;});
+      h+=`</div></div>`;
+    });
+    h+=`</div>`;
+  });
+  h+=`</div>`;
+  // Feedback
+  if(fb.strengths||fb.growth){
+    h+=`<div style="padding:14px 16px;border-top:2px solid #e8efe8"><div style="font-size:14px;font-weight:700;color:var(--g1);margin-bottom:10px">💬 ${L("feedback").replace("💬 ","")}</div>`;
+    if(fb.strengths) h+=`<div style="margin-bottom:10px"><div style="font-size:12px;font-weight:700;color:#15803d;margin-bottom:3px">🌟 ${L("strengths").split("(")[0].replace("🌟 ","")}</div><div style="font-size:13px;line-height:1.6;padding:8px 12px;background:#f0fdf4;border-radius:8px;border-left:3px solid #15803d">${fb.strengths}</div></div>`;
+    if(fb.growth) h+=`<div><div style="font-size:12px;font-weight:700;color:#c2410c;margin-bottom:3px">🔧 ${L("growth").split("(")[0].replace("🔧 ","")}</div><div style="font-size:13px;line-height:1.6;padding:8px 12px;background:#fff7ed;border-radius:8px;border-left:3px solid #c2410c">${fb.growth}</div></div>`;
+    h+=`</div>`;
+  }
+  // Photos
+  const allP=EVAL.flatMap(d=>(state.photos[d.id]||[]).map(p=>p.data));
+  if(allP.length>0){
+    h+=`<div style="padding:14px 16px;border-top:2px solid #e8efe8"><div style="font-size:14px;font-weight:700;color:var(--g1);margin-bottom:10px">📷 ${L("photoEvidence")} (${allP.length} ${L("photoN")})</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;max-height:210px;overflow:hidden">`;
+    allP.forEach(src=>{h+=`<img src="${src}" style="width:100%;height:95px;object-fit:cover;border-radius:8px;border:2px solid #d1e0d1">`;});
+    h+=`</div></div>`;
+  }
+  h+=`<div style="padding:10px 16px;background:#f8faf8;font-size:11px;color:#9ca3af;text-align:center">${L("createdAt")} ${new Date().toLocaleDateString("th-TH",{day:"numeric",month:"long",year:"numeric",hour:"2-digit",minute:"2-digit"})} | CVN Appraisal System</div>`;
+  h+=`</div>`; // end export-doc
+
+  // Action buttons
+  h+=`<div class="btn-row no-print" style="margin-top:12px"><button class="btn btn-primary" onclick="doCopy()">${L("copy")}</button></div>`;
+  h+=`<button class="btn btn-outline no-print" style="margin-bottom:16px" onclick="doPrint()">${L("pdf")}</button>`;
+  h+=`<div class="no-print" style="font-size:11px;color:#9ca3af;text-align:center;margin-bottom:16px">${L("pdfHint")}</div>`;
+  return h;
+}
+
+// ══════ HISTORY VIEW ══════
+function renderHistory(){
+  // Detail view
+  if(state.histDetail){
+    const r=state.histDetail;
+    const tw=parseFloat(r.total_weighted)||0;const rq=getQ(tw);
+    const rsc=r.scores||{};
+    let h=`<button class="btn btn-outline" style="width:auto;padding:8px 14px;margin-bottom:10px;font-size:13px" onclick="state.histDetail=null;render()">${L("back")}</button>`;
+    h+=`<div class="card" style="text-align:center;padding:24px 16px;background:linear-gradient(135deg,${rq.bg},#fff)">
+      <div style="font-size:40px">${rq.e}</div>
+      <div style="font-size:42px;font-weight:900;color:${rq.c}">${tw.toFixed(1)}/100</div>
+      <div style="font-size:18px;font-weight:700;color:${rq.c}">${rq.l}</div>
+      <div style="font-size:14px;color:#4a5e4a;margin-top:10px"><b>${r.teacher||"-"}</b></div>
+      <div style="font-size:12px;color:#9ca3af">${r.subject||"-"} | ${L("supervisorLabel")}: ${r.supervisor||"-"}</div>
+      <div style="font-size:11px;color:#9ca3af">${r.timestamp?new Date(r.timestamp).toLocaleDateString(state.lang==="en"?"en-US":"th-TH",{day:"numeric",month:"long",year:"numeric"}):""}  | ${L("periodN")} ${r.period||"-"} | ${L("visitN")} ${r.visitNum||"-"}</div>
+    </div>`;
+    // Domain scores
+    h+=`<div class="card"><div style="padding:12px 16px;border-bottom:1px solid #e8efe8;font-weight:700;font-size:15px;color:var(--g1)">📊 ${L("domainDetail")}</div>`;
+    EVAL.forEach(d=>{
+      const dc=calcDom(d.id,rsc);const dp=d.w>0?(dc.wt/d.w*100):0;const dq=getQ(dp);
+      h+=`<div style="padding:12px 16px;border-bottom:1px solid #f0f5f0">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-size:13px;font-weight:600">${d.icon} ${L("domainN")} ${d.id}</span>
+          <span style="font-size:14px;font-weight:800;color:${dq.c}">${dc.wt.toFixed(1)}/${d.w}</span>
+        </div>
+        <div class="progress"><div class="progress-fill" style="width:${dp}%;background:${dq.c}"></div></div>
+        <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:6px">`;
+      d.subs.flatMap(s=>s.inds).forEach(i=>{
+        const v=rsc[i.id];
+        h+=`<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:${v?getQ(v*20).bg:"#f3f4f6"};color:${v?getQ(v*20).c:"#9ca3af"};font-weight:600">${i.y==="s"?"★":"⬤"}${v||"-"}</span>`;
+      });
+      h+=`</div></div>`;
+    });
+    h+=`</div>`;
+    // Feedback
+    const rfb=r.fb||{};
+    if(rfb.strengths||rfb.growth){
+      h+=`<div class="card"><div style="padding:12px 16px;font-weight:700;font-size:15px;color:var(--g1);border-bottom:1px solid #e8efe8">💬 ${L("feedback").replace("💬 ","")}</div>`;
+      if(rfb.strengths) h+=`<div style="padding:10px 16px;border-bottom:1px solid #f0f5f0"><div style="font-size:12px;font-weight:700;color:#15803d;margin-bottom:3px">🌟 ${L("strengths").split("(")[0].replace("🌟 ","")}</div><div style="font-size:13px;line-height:1.6">${rfb.strengths}</div></div>`;
+      if(rfb.growth) h+=`<div style="padding:10px 16px"><div style="font-size:12px;font-weight:700;color:#c2410c;margin-bottom:3px">🔧 ${L("growth").split("(")[0].replace("🔧 ","")}</div><div style="font-size:13px;line-height:1.6">${rfb.growth}</div></div>`;
+      h+=`</div>`;
+    }
+    // Delete button
+    h+=`<button class="btn btn-danger" style="margin-bottom:16px" onclick="deleteRecord(${r.id})">${L("deleteThis")}</button>`;
+    return h;
+  }
+
+  // List view
+  let h=`<div class="card" style="padding:16px;text-align:center"><div style="font-size:18px;font-weight:800;color:var(--g1)">${L("history")}</div><div style="font-size:12px;color:#6b7280">${state.records.length} ${L("historyN")}</div></div>`;
+  if(state.records.length===0){
+    h+=`<div class="card" style="padding:40px 20px;text-align:center"><div style="font-size:48px;margin-bottom:8px">📝</div><div style="font-size:14px;color:#6b7280">${L("noHistory")}</div></div>`;
+  } else {
+    state.records.forEach((r,idx)=>{
+      const tw=parseFloat(r.total_weighted)||0;const rq=getQ(tw);
+      h+=`<div class="card" style="cursor:pointer" onclick="viewRecord(${idx})"><div style="padding:12px 16px;display:flex;align-items:center;gap:10px"><div style="width:46px;height:46px;border-radius:10px;background:${rq.bg};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px">${rq.e}</div><div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:700;color:var(--g1)">${r.teacher||"-"}</div><div style="font-size:11px;color:#6b7280">${r.subject||r.level||"-"} | ${L("visitN")} ${r.visitNum||"-"} | ${L("periodN")} ${r.period||"-"}</div><div style="font-size:10px;color:#9ca3af">${r.timestamp?new Date(r.timestamp).toLocaleDateString(state.lang==="en"?"en-US":"th-TH",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}):""}</div></div><div style="text-align:right;flex-shrink:0"><div style="font-size:18px;font-weight:900;color:${rq.c}">${tw.toFixed(0)}</div><span class="badge" style="background:${rq.bg};color:${rq.c}">${QL(rq)}</span></div></div></div>`;
+    });
+    h+=`<button class="btn btn-danger" style="margin-top:8px;margin-bottom:16px" onclick="clearAllRecords()">${L("clearAll")}</button>`;
+  }
+  if(SCRIPT_URL) h+=`<button class="btn btn-outline" style="margin-bottom:16px" onclick="loadRecords()">${L("reload")}</button>`;
+  return h;
+}
+
+function viewRecord(idx){state.histDetail=state.records[idx];render();window.scrollTo(0,0)}
+
+function deleteRecord(id){
+  if(!confirm(L("confirmDelete"))) return;
+  state.records=state.records.filter(r=>r.id!==id);
+  localStorage.setItem("cvn-local",JSON.stringify(state.records));
+  state.histDetail=null;render();toast("ลบรายการเรียบร้อย");
+}
+
+function clearAllRecords(){
+  if(!confirm(L("confirmClear"))) return;
+  state.records=[];localStorage.removeItem("cvn-local");
+  render();toast("ล้างประวัติเรียบร้อย");
+}
+
+// ══════ ACTIONS ══════
+function setScore(id,val){state.scores[id]=val;render()}
+function toggleDom(id){state.expDom[id]=!state.expDom[id];render()}
+function toggleSub(id){state.expSub[id]=!state.expSub[id];render()}
+function uploadPhoto(did){state.uploadTarget=did;document.getElementById("file-input").click()}
+function removePhoto(did,idx){state.photos[did].splice(idx,1);render()}
+
+document.getElementById("file-input").addEventListener("change",function(e){
+  const f=e.target.files?.[0];if(!f||!state.uploadTarget)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    if(!state.photos[state.uploadTarget])state.photos[state.uploadTarget]=[];
+    state.photos[state.uploadTarget].push({name:f.name,data:ev.target.result});
+    toast("อัปโหลดสำเร็จ");render();
+  };
+  r.readAsDataURL(f);e.target.value="";
+});
+
+function resetForm(){
+  state.scores={};state.photos={};state.fb={strengths:"",growth:""};
+  state.info={teacher:"",position:"",subject:"",subjectCode:"",level:"",students:"",date:"",period:"",topic:"",supervisor:"",visitNum:"",semester:"",year:""};
+  state.expDom={1:true};state.expSub={};switchView("form");toast("ล้างฟอร์มเรียบร้อย");
+}
+
+// ══════ COPY ══════
+function doCopy(){
+  const sc=state.scores;const inf=state.info;const fb=state.fb;
+  const tw=calcAll(sc);const q=getQ(tw);
+  let t=`═══ ${L("exportTitle")} ═══\n${L("schoolName")}\n\n`;
+  t+=`👤 ${L("teacher").replace(' *','')}:  ${inf.teacher||"-"}\n📌 ${L("position")}: ${inf.position||"-"}\n📚 ${L("subject")}: ${inf.subjectCode||""} ${inf.subject||"-"}\n🎓 ${L("classLevel")}: ${inf.level||"-"} | ${L("students")}: ${inf.students||"-"} ${state.lang==="en"?"":"คน"}\n📅 ${L("dateLabel")}: ${inf.date||"-"} | ${L("periodLabel")}: ${inf.period||"-"}\n📝 ${L("topicLabel")}: ${inf.topic||"-"}\n👨‍🏫 ${L("supervisorLabel")}: ${inf.supervisor||"-"} | ${L("visitLabel")}: ${inf.visitNum||"-"}\n📆 ${L("semesterLabel")} ${inf.semester||"-"} / ${inf.year||"-"}\n\n`;
+  t+=`══ ${L("score100")}: ${tw.toFixed(1)}/100 (${QL(q)}) ══\n\n`;
+  EVAL.forEach(d=>{const dc=calcDom(d.id,sc);t+=`${d.icon} ${L("domainN")} ${d.id}: ${dc.wt.toFixed(1)}/${d.w} (${L("raw")} ${dc.raw}/${dc.mx})\n`;d.subs.forEach(s=>{t+=`  ${s.id} ${TS(s)}\n`;s.inds.forEach(i=>{t+=`    ${i.y==="s"?"★":"⬤"} ${TI(i)}: ${sc[i.id]||"-"}/5\n`;});});t+=`\n`;});
+  if(fb.strengths)t+=`🌟 ${L("strengths").split("(")[0].replace("🌟 ","")}:\n${fb.strengths}\n\n`;
+  if(fb.growth)t+=`🔧 ${L("growth").split("(")[0].replace("🔧 ","")}:\n${fb.growth}\n`;
+
+  const ta=document.createElement("textarea");ta.value=t;ta.style.cssText="position:fixed;left:-9999px";
+  document.body.appendChild(ta);ta.select();
+  try{document.execCommand("copy");toast("คัดลอกสำเร็จ!");}catch(e){
+    prompt("กรุณาคัดลอกข้อความด้านล่าง (Ctrl+A แล้ว Ctrl+C):",t);
+  }
+  document.body.removeChild(ta);
+}
+
+// ══════ PRINT / PDF ══════
+function doPrint(){window.print()}
+
+// ══════ SAVE TO GOOGLE SHEETS ══════
+async function saveToSheet(){
+  if(!state.info.teacher||!state.info.supervisor){toast("กรุณากรอกชื่อผู้รับการนิเทศและผู้นิเทศ");return}
+  if(scoredCount()<10){toast("กรุณาประเมินอย่างน้อย 10 รายการ");return}
+  if(!SCRIPT_URL){toast("⚠️ ยังไม่ได้ตั้งค่า SCRIPT_URL — บันทึกลง Local แทน");saveLocal();return}
+
+  state.saving=true;render();
+  const tw=calcAll(state.scores);const q=getQ(tw);
+
+  // Collect photos as base64
+  const photos=[];
+  EVAL.forEach(d=>{(state.photos[d.id]||[]).forEach(p=>{photos.push({name:p.name,data:p.data})})});
+
+  const body={info:state.info,scores:state.scores,feedback:state.fb,photos:photos,totalWeighted:tw.toFixed(1),quality:q.l};
+
+  try{
+    const res=await fetch(SCRIPT_URL,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify(body)});
+    const data=await res.json();
+    if(data.success){toast("✅ บันทึกลง Google Sheets สำเร็จ! (แถวที่ "+data.rowNumber+")");loadRecords();}
+    else{toast("❌ "+data.error);saveLocal();}
+  }catch(e){toast("❌ เชื่อมต่อไม่ได้ — บันทึก Local แทน");saveLocal();}
+  state.saving=false;render();
+}
+
+function saveLocal(){
+  const tw=calcAll(state.scores);const q=getQ(tw);
+  const rec={
+    id:Date.now(),timestamp:new Date().toISOString(),
+    teacher:state.info.teacher, position:state.info.position,
+    subjectCode:state.info.subjectCode, subject:state.info.subject,
+    level:state.info.level, students:state.info.students,
+    date:state.info.date, period:state.info.period, topic:state.info.topic,
+    supervisor:state.info.supervisor, visitNum:state.info.visitNum,
+    semester:state.info.semester, year:state.info.year,
+    total_weighted:tw.toFixed(1), quality:q.l,
+    scores:{...state.scores}, fb:{...state.fb}
+  };
+  let local=JSON.parse(localStorage.getItem("cvn-local")||"[]");
+  local.unshift(rec);localStorage.setItem("cvn-local",JSON.stringify(local.slice(0,200)));
+  state.records=local;
+  toast("💾 บันทึกสำเร็จ");render();
+}
+
+// ══════ LOAD RECORDS ══════
+async function loadRecords(){
+  if(!SCRIPT_URL){
+    // Load from localStorage
+    const local=JSON.parse(localStorage.getItem("cvn-local")||"[]");
+    state.records=local;render();
+    return;
+  }
+  try{
+    const res=await fetch(SCRIPT_URL+"?action=list");const data=await res.json();
+    if(data.success){state.records=data.records;render();toast("โหลดข้อมูลสำเร็จ ("+data.records.length+" รายการ)");}
+  }catch(e){toast("โหลดข้อมูลไม่สำเร็จ")}
+}
+
+// ══════ BIND EVENTS ══════
+function bindEvents(){
+  document.querySelectorAll("[data-info]").forEach(el=>{
+    el.addEventListener("input",e=>{state.info[e.target.dataset.info]=e.target.value});
+    el.addEventListener("change",e=>{state.info[e.target.dataset.info]=e.target.value});
+  });
+  document.querySelectorAll("[data-fb]").forEach(el=>{
+    el.addEventListener("input",e=>{state.fb[e.target.dataset.fb]=e.target.value});
+  });
+}
+
+// ══════ INIT ══════
+function init(){
+  // Always load records first (local or remote)
+  loadRecords();
+  render();
+  if(SCRIPT_URL){
+    const bar=document.getElementById("status-bar");
+    bar.style.display="block";bar.textContent="🔄 กำลังเชื่อมต่อ Google Sheets...";bar.className="status-bar";
+    loadRecords().then(()=>{bar.textContent="✅ เชื่อมต่อ Google Sheets สำเร็จ";bar.className="status-bar connected";setTimeout(()=>{bar.style.display="none"},3000)}).catch(()=>{bar.textContent="❌ เชื่อมต่อไม่สำเร็จ";bar.className="status-bar error"});
+  }
+}
+init();
+</script>
+</body>
+</html>
