@@ -268,7 +268,7 @@ th:{
   strengthsP:"ระบุจุดเด่นที่พบ...",growthP:"ระบุข้อเสนอแนะ...",
   save:"💾 บันทึกผลการนิเทศ",saving:"กำลังบันทึก...",export:"📄 Export สรุปผลการนิเทศ",
   reset:"🔄 เริ่มนิเทศรายการใหม่",copy:"📋 คัดลอกข้อความ",pdf:"📥 บันทึก PDF",
-  pdfHint:"💡 บันทึก PDF → เลือก \"Save as PDF\" ในหน้าต่าง Print",
+  pdfHint:"💡 มือถือ: จะเปิดหน้าใหม่ → กดปุ่ม 🖨️ หรือ Share → Print | คอม: เลือก Save as PDF",
   back:"← กลับ",score100:"คะแนน (เต็ม 100)",qualityLevel:"ระดับคุณภาพ",
   domainBreakdown:"📊 คะแนนรายด้าน (ถ่วงน้ำหนัก)",domainDetail:"📊 คะแนนรายด้าน",
   photoEvidence:"📷 ภาพหลักฐาน",photoN:"ภาพ",attachPhoto:"📷 แนบรูปหลักฐาน",
@@ -298,7 +298,7 @@ en:{
   strengthsP:"Describe strengths observed...",growthP:"Describe areas for improvement...",
   save:"💾 Save Evaluation",saving:"Saving...",export:"📄 Export Summary",
   reset:"🔄 Start New Evaluation",copy:"📋 Copy Text",pdf:"📥 Save PDF",
-  pdfHint:'💡 Save PDF → Select "Save as PDF" in the Print dialog',
+  pdfHint:'💡 Mobile: Opens new page → tap 🖨️ or Share → Print | Desktop: Select "Save as PDF"',
   back:"← Back",score100:"Score (out of 100)",qualityLevel:"Quality Level",
   domainBreakdown:"📊 Domain Scores (Weighted)",domainDetail:"📊 Domain Scores",
   photoEvidence:"📷 Photo Evidence",photoN:"photos",attachPhoto:"📷 Attach Photo",
@@ -957,7 +957,33 @@ function doCopy(){
 }
 
 // ══════ PRINT / PDF ══════
-function doPrint(){window.print()}
+function doPrint(){
+  const el=document.getElementById("print-area");
+  if(!el){return;}
+  const isMobile=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  if(isMobile){
+    // Mobile: open in new tab, user can use browser Share → Print/Save PDF
+    const html=`<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CVN Supervision Summary</title><style>
+body{font-family:'Sarabun','Noto Sans Thai',sans-serif;margin:0;padding:12px;font-size:13px;color:#1a2e1a;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+*{box-sizing:border-box}
+img{max-width:110px;height:85px;object-fit:cover;border-radius:6px}
+@page{size:A4;margin:10mm}
+.print-btn{position:fixed;bottom:16px;right:16px;background:#2d5a27;color:white;border:none;padding:14px 20px;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.3);font-family:inherit;z-index:999}
+@media print{.print-btn{display:none}}
+</style></head><body>
+<button class="print-btn" onclick="window.print()">🖨️ Print / Save PDF</button>
+${el.outerHTML}
+<script>setTimeout(()=>{},500)<\/script>
+</body></html>`;
+    const blob=new Blob([html],{type:"text/html;charset=utf-8"});
+    const url=URL.createObjectURL(blob);
+    window.open(url,"_blank");
+    setTimeout(()=>URL.revokeObjectURL(url),60000);
+    toast(state.lang==="en"?"Tap 🖨️ Print / Save PDF button":"กดปุ่ม 🖨️ Print / Save PDF ในหน้าใหม่");
+  }else{
+    window.print();
+  }
+}
 
 // ══════ SAVE TO GOOGLE SHEETS ══════
 async function saveToSheet(){
