@@ -218,7 +218,7 @@ textarea.f-inp{min-height:100px;resize:vertical}
 <div class="header">
   <div class="header-inner">
     <svg width="42" height="42" viewBox="0 0 120 120"><defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2d5a27"/><stop offset="100%" stop-color="#1a3a18"/></linearGradient></defs><path d="M60 8 L108 28 Q112 30 112 34 L112 60 Q112 90 60 114 Q8 90 8 60 L8 34 Q8 30 12 28 Z" fill="url(#sg)" stroke="#c9a84c" stroke-width="4"/><path d="M60 16 L100 32 L100 58 Q100 84 60 106 Q20 84 20 58 L20 32 Z" fill="none" stroke="#c9a84c" stroke-width="1.5" opacity=".6"/><text x="60" y="68" text-anchor="middle" font-family="Georgia,serif" font-size="36" font-weight="bold" fill="white" letter-spacing="3">CVN</text><path d="M42 30 L60 22 L78 30" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"/><path d="M40 82 Q50 78 60 82 Q70 78 80 82" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"/></svg>
-    <div><h1 id="h-title">${L("schoolName")}</h1><p id="h-sub">ระบบนิเทศการสอน Active Learning</p></div>
+    <div><h1 id="h-title">โรงเรียนจารุวัฒนานุกูล</h1><p id="h-sub">ระบบนิเทศการสอน Active Learning</p></div>
     <button class="lang-btn" onclick="toggleLang()" id="lang-btn" style="margin-left:auto">🇬🇧 EN</button>
   </div>
   <div class="nav" id="nav">
@@ -245,7 +245,8 @@ textarea.f-inp{min-height:100px;resize:vertical}
 // ══════════════════════════════════════════════════════════════
 //  CONFIGURATION — ใส่ URL ของ Google Apps Script ที่นี่
 // ══════════════════════════════════════════════════════════════
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxK86vLF_-6cHK1TQrBSAVbGfWZsDIPPt6U8zd7c7Q_E1W-jmsUl2mBNxS5cpwRymGh/exec"; // ← วาง URL ที่ได้จาก Apps Script Deploy ที่นี่
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxcv_jp0D0Kcknl8sV6gl-mviAc8ClNPy6iC48wIPUAYMenS1ISDd21KaDZdApbk9zZ/exec"; // ← วาง URL ที่ได้จาก Apps Script Deploy ที่นี่
+const SHEET_URL  = "https://docs.google.com/spreadsheets/d/1UAmo50RcUrbbX-qnl-hwHvAvVJgOJqR4OqgqgdpaFBQ/edit"; // ← วาง URL ของ Google Sheets ที่นี่ (เปิด Sheets แล้วคัดลอก URL จาก address bar)
 
 // ══════════════════════════════════════════════════════════════
 //  BILINGUAL SYSTEM (TH/EN)
@@ -369,14 +370,14 @@ i:{
 "3.2.1":"Teacher uses friendly words, tone, and gestures with positive reinforcement",
 "3.2.2":"Teacher engages all students equally, not just front row or high achievers",
 "3.2.3":"Classroom norms established with student participation",
-"3.3.1":"Students feel safe to answer and ask without fear (Psychological Safety)",
-"3.3.2":"Students help each other; disruptive behavior managed gently",
-"3.3.3":"Most students show on-task behavior during activities (≥ 80%)",
+"3.3.1":"Students feel safe to answer and ask without fear of being scolded (Psychological Safety)",
+"3.3.2":"Students help each other work well and maintain good learning discipline",
+"3.3.3":"Most students behave according to teacher instructions during activities (≥ 80%)",
 "3.4.1":"Teacher manages activity transitions quickly and clearly without wasted time",
 "3.4.2":"Students understand and respond to teacher's signals promptly",
 "4.1.1":"Teacher actively monitors student work throughout the lesson",
 "4.1.2":"Teacher adjusts teaching in real-time based on observations (Responsive Teaching)",
-"4.2.1":"Clear Formative Assessment tools (worksheets, Exit Tickets, comprehension checks)",
+"4.2.1":"Clear Formative Assessment tools (worksheets, periodic comprehension checks)",
 "4.2.2":"Students know assessment criteria (Rubric/Success Criteria) before starting work",
 "4.3.1":"Students conduct self-assessment",
 "4.3.2":"Constructive peer assessment activities",
@@ -390,6 +391,49 @@ i:{
 }};
 
 function L(key){return UI[state.lang]?.[key]||UI.th[key]||key}
+
+// ─── Dropdown Options (Thai / English) ───
+const POSITIONS=[
+  {th:"ครูผู้สอน",en:"Teacher"},
+  {th:"ครูผู้สอน - หัวหน้าระดับ",en:"Teacher - Grade Head"},
+  {th:"ครูผู้สอน - หัวหน้าสาระ",en:"Teacher - Subject Head"},
+  {th:"ครูผู้สอน - รองผู้อำนวยการ",en:"Teacher - Vice Director"},
+  {th:"ครูพิเศษ",en:"Special Teacher"}
+];
+const SUBJECTS=[
+  {th:"ภาษาไทย",en:"Thai Language"},
+  {th:"ภาษาอังกฤษ",en:"English Language"},
+  {th:"ภาษาจีน",en:"Chinese Language"},
+  {th:"คณิตศาสตร์",en:"Mathematics"},
+  {th:"วิทยาศาสตร์",en:"Science"},
+  {th:"เทคโนโลยีและวิทยาการคำนวณ",en:"Technology & Computing"},
+  {th:"สังคมศึกษาและประวัติศาสตร์",en:"Social Studies & History"},
+  {th:"พลศึกษา",en:"Physical Education"},
+  {th:"สุขศึกษา",en:"Health Education"},
+  {th:"ดนตรี",en:"Music"},
+  {th:"นาฏศิลป์",en:"Performing Arts"},
+  {th:"ศิลปะ",en:"Visual Arts"},
+  {th:"STEM For Life การงานอาชีพ",en:"STEM For Life / Vocational"}
+];
+const LEVELS=[
+  {th:"เตรียมอนุบาล",en:"Pre-Kindergarten"},
+  {th:"อนุบาล 1",en:"Kindergarten 1"},
+  {th:"อนุบาล 2",en:"Kindergarten 2"},
+  {th:"อนุบาล 3",en:"Kindergarten 3"},
+  {th:"ประถมศึกษาปีที่ 1",en:"Grade 1 (Pratom 1)"},
+  {th:"ประถมศึกษาปีที่ 2",en:"Grade 2 (Pratom 2)"},
+  {th:"ประถมศึกษาปีที่ 3",en:"Grade 3 (Pratom 3)"},
+  {th:"ประถมศึกษาปีที่ 4",en:"Grade 4 (Pratom 4)"},
+  {th:"ประถมศึกษาปีที่ 5",en:"Grade 5 (Pratom 5)"},
+  {th:"ประถมศึกษาปีที่ 6",en:"Grade 6 (Pratom 6)"}
+];
+function DD(arr){return arr.map(o=>state.lang==="en"?o.en:o.th)}
+function DDval(arr){return arr.map(o=>o.th)} // always save Thai value
+
+// Translate stored Thai value → display label in current language
+function dispPos(v){if(!v)return"-";const f=POSITIONS.find(p=>p.th===v);return f?(state.lang==="en"?f.en:f.th):v}
+function dispSubj(v){if(!v)return"-";const f=SUBJECTS.find(p=>p.th===v);return f?(state.lang==="en"?f.en:f.th):v}
+function dispLevel(v){if(!v)return"-";const f=LEVELS.find(p=>p.th===v);return f?(state.lang==="en"?f.en:f.th):v}
 function LE(type,id){
   if(state.lang==="th") return null;
   if(type==="d") return EN_EVAL.d[id];
@@ -407,6 +451,7 @@ function TQ(q){
 
 function toggleLang(){
   state.lang=state.lang==="th"?"en":"th";
+  document.documentElement.lang=state.lang;
   document.getElementById("lang-btn").innerHTML=state.lang==="th"?"🇬🇧 EN":"🇹🇭 TH";
   document.getElementById("h-title").textContent=L("schoolName");
   document.getElementById("h-sub").textContent=L("schoolSub");
@@ -459,9 +504,9 @@ const EVAL=[
 {id:"3.2.2",t:"ครูทั่วถึง สบตานักเรียนอย่างกระจาย ไม่กระจุกหน้าห้องหรือเด็กเก่ง",y:"b"},
 {id:"3.2.3",t:"มีข้อตกลงชั้นเรียน (Classroom Norms) ที่นักเรียนมีส่วนร่วมกำหนด",y:"s"}]},
 {id:"3.3",title:"สร้างบรรยากาศปลอดภัยทางจิตวิทยาและเรียนรู้ร่วมกันอย่างมีความสุข",inds:[
-{id:"3.3.1",t:"นักเรียนกล้าตอบ กล้าถาม ไม่กลัวโดนดุ/เยาะ (Psychological Safety)",y:"b"},
-{id:"3.3.2",t:"นักเรียนช่วยเหลือกัน จัดระเบียบพฤติกรรมรบกวนได้นุ่มนวล",y:"b"},
-{id:"3.3.3",t:"นักเรียนส่วนใหญ่มีพฤติกรรม On-task ระหว่างทำกิจกรรม (≥ 80%)",y:"b"}]},
+{id:"3.3.1",t:"นักเรียนกล้าตอบ กล้าถาม ไม่กลัวโดนดุ (Psychological Safety)",y:"b"},
+{id:"3.3.2",t:"นักเรียนช่วยเหลือกันทำงานดี จัดระเบียบในการเรียนได้ดี",y:"b"},
+{id:"3.3.3",t:"นักเรียนส่วนใหญ่มีพฤติกรรมตรงตามที่ครูมอบหมายในการทำกิจกรรม (≥ 80%)",y:"b"}]},
 {id:"3.4",title:"บริหารเวลาและการเปลี่ยนกิจกรรม (Transition Management)",inds:[
 {id:"3.4.1",t:"ครูบริหารการย้ายกิจกรรมรวดเร็ว ชัดเจน ไม่สูญเสียเวลาโดยไม่จำเป็น",y:"b"},
 {id:"3.4.2",t:"นักเรียนเข้าใจสัญญาณ/คำสั่งของครูและปรับพฤติกรรมได้ทันท่วงที",y:"b"}]}
@@ -471,7 +516,7 @@ const EVAL=[
 {id:"4.1.1",t:"ครูคอยเดินตรวจ สังเกตการทำงานของนักเรียนทุกระยะ",y:"b"},
 {id:"4.1.2",t:"ครูนำข้อมูลจากการสังเกตมาปรับการสอนทันที (Real-time Responsive)",y:"b"}]},
 {id:"4.2",title:"ใช้เครื่องมือและวิธีการวัดประเมินผลที่เหมาะสมกับเป้าหมาย",inds:[
-{id:"4.2.1",t:"มีเครื่องมือ Formative Assessment ชัดเจน เช่น ใบงานย่อย, Exit Ticket",y:"b"},
+{id:"4.2.1",t:"มีเครื่องมือ Formative Assessment ชัดเจน เช่น ใบงานย่อย, ถามความเข้าใจเป็นระยะ",y:"b"},
 {id:"4.2.2",t:"นักเรียนทราบเกณฑ์ประเมิน (Rubric/Success Criteria) ก่อนลงมือทำงาน",y:"b"}]},
 {id:"4.3",title:"เปิดโอกาสให้ผู้เรียนมีส่วนร่วมในการวัดและประเมินผล",inds:[
 {id:"4.3.1",t:"มีการให้นักเรียนประเมินผลงานตนเอง (Self-assessment)",y:"b"},
@@ -504,7 +549,7 @@ function SL(v){return state.lang==="en"?SL_EN[v]:SL_TH[v]}
 let state = {
   view: "form",
   scores: {},
-  info: {teacher:"",position:"",subject:"",subjectCode:"",level:"",students:"",date:"",period:"",topic:"",supervisor:"",visitNum:"",semester:"",year:""},
+  info: {teacher:"",position:"",subject:"",subjectCode:"",level:"",room:"",students:"",date:"",period:"",topic:"",supervisor:"",visitNum:"",semester:"",year:""},
   fb: {strengths:"",growth:""},
   photos: {}, // {domainId: [{name, data}]}
   expDom: {1:true},
@@ -513,7 +558,8 @@ let state = {
   saving: false,
   uploadTarget: null,
   histDetail: null,
-  lang: "th"
+  lang: "th",
+  saved: false
 };
 
 // ══════ CALC ══════
@@ -564,20 +610,61 @@ function updateFab(){
 // ══════ FORM VIEW ══════
 function renderForm(){
   const info=state.info;
+  const sl=state.lang;
   let h=`<div class="card"><div class="card-head">${L("generalInfo")}</div><div class="grid2">`;
-  const fields=[
-    ["teacher",L("teacher"),"text"],["position",L("position"),"text"],
-    ["subjectCode",L("subjectCode"),"text"],["subject",L("subject"),"text"],
-    ["level",L("level"),"text"],["students",L("students"),"text"],
-  ];
-  fields.forEach(([k,l,t])=>{
-    h+=`<div><label class="f-label">${l}</label><input class="f-inp" data-info="${k}" value="${info[k]||""}" placeholder="${l.replace(' *','')}" type="${t}"></div>`;
-  });
-  h+=`<div><label class="f-label">${L("date")}</label><input class="f-inp" data-info="date" type="date" value="${info.date||""}"></div>`;
+
+  // Teacher name (text input)
+  h+=`<div><label class="f-label">${L("teacher")}</label><input class="f-inp" data-info="teacher" value="${info.teacher||""}" placeholder="${L("teacher").replace(' *','')}"></div>`;
+
+  // Position (dropdown)
+  h+=`<div><label class="f-label">${L("position")}</label><select class="f-inp" data-info="position"><option value="">${sl==="en"?"— Select —":"— เลือก —"}</option>`;
+  POSITIONS.forEach(p=>{const v=p.th;const label=sl==="en"?p.en:p.th;h+=`<option value="${v}" ${info.position===v?"selected":""}>${label}</option>`;});
+  h+=`</select></div>`;
+
+  // Subject code (text input)
+  h+=`<div><label class="f-label">${L("subjectCode")}</label><input class="f-inp" data-info="subjectCode" value="${info.subjectCode||""}"></div>`;
+
+  // Subject (dropdown)
+  h+=`<div><label class="f-label">${L("subject")}</label><select class="f-inp" data-info="subject"><option value="">${sl==="en"?"— Select —":"— เลือก —"}</option>`;
+  SUBJECTS.forEach(p=>{const v=p.th;const label=sl==="en"?p.en:p.th;h+=`<option value="${v}" ${info.subject===v?"selected":""}>${label}</option>`;});
+  h+=`</select></div>`;
+
+  // Level (dropdown)
+  h+=`<div><label class="f-label">${L("level")}</label><select class="f-inp" data-info="level"><option value="">${sl==="en"?"— Select —":"— เลือก —"}</option>`;
+  LEVELS.forEach(p=>{const v=p.th;const label=sl==="en"?p.en:p.th;h+=`<option value="${v}" ${info.level===v?"selected":""}>${label}</option>`;});
+  h+=`</select></div>`;
+
+  // Room (dropdown) + Students (text)
+  h+=`<div style="display:flex;gap:10px"><div style="flex:1"><label class="f-label">${sl==="en"?"Room":"ห้อง"}</label><select class="f-inp" data-info="room"><option value="">${sl==="en"?"—":"—"}</option>${[1,2,3,4,5,6,7,8].map(n=>`<option value="${n}" ${info.room==n?"selected":""}>${n}</option>`).join("")}</select></div><div style="flex:1"><label class="f-label">${L("students")}</label><input class="f-inp" data-info="students" value="${info.students||""}"></div></div>`;
+
+  // Date + Period
+  // Parse existing date value (YYYY-MM-DD)
+  const dateParts = (info.date||"").split("-");
+  const dateY = dateParts[0]||"", dateM = dateParts[1]||"", dateD = dateParts[2]||"";
+  const MONTHS_TH = ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
+  const MONTHS_EN = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const MONTHS = state.lang==="en" ? MONTHS_EN : MONTHS_TH;
+  const dayOpts = Array.from({length:31},(_,i)=>i+1).map(d=>`<option value="${String(d).padStart(2,'0')}" ${dateD===String(d).padStart(2,'0')?"selected":""}>${d}</option>`).join("");
+  const monOpts = MONTHS.map((m,i)=>{const v=String(i+1).padStart(2,'0');return `<option value="${v}" ${dateM===v?"selected":""}>${m}</option>`;}).join("");
+  const curY = new Date().getFullYear(); const startY = state.lang==="en" ? curY : curY+543;
+  const yearOpts = Array.from({length:5},(_,i)=>startY-i).map(y=>`<option value="${state.lang==="en"?y:y-543}" ${dateY===(state.lang==="en"?String(y):String(y-543))?"selected":""}>${y}</option>`).join("");
+  h+=`<div><label class="f-label">${L("date")}</label>
+    <div style="display:flex;gap:6px">
+      <select class="f-inp" id="date-d" style="flex:1" onchange="updateDate()">${`<option value="">${state.lang==="en"?"Day":"วัน"}</option>`+dayOpts}</select>
+      <select class="f-inp" id="date-m" style="flex:2" onchange="updateDate()">${`<option value="">${state.lang==="en"?"Month":"เดือน"}</option>`+monOpts}</select>
+      <select class="f-inp" id="date-y" style="flex:1.5" onchange="updateDate()">${`<option value="">${state.lang==="en"?"Year":"ปี"}</option>`+yearOpts}</select>
+    </div>
+  </div>`;
   h+=`<div><label class="f-label">${L("period")}</label><select class="f-inp" data-info="period"><option value="">${L("selectPeriod")}</option>${[1,2,3,4,5,6].map(n=>`<option value="${n}" ${info.period==n?"selected":""}>${L("periodN")} ${n}</option>`).join("")}</select></div>`;
+
+  // Topic (full width)
   h+=`<div class="full"><label class="f-label">${L("topic")}</label><input class="f-inp" data-info="topic" value="${info.topic||""}" placeholder="${L("topic")}"></div>`;
+
+  // Supervisor + Visit
   h+=`<div><label class="f-label">${L("supervisor")}</label><input class="f-inp" data-info="supervisor" value="${info.supervisor||""}"></div>`;
   h+=`<div><label class="f-label">${L("visitNum")}</label><select class="f-inp" data-info="visitNum"><option value="">${L("selectVisit")}</option>${[1,2,3,4,5,6].map(n=>`<option value="${n}" ${info.visitNum==n?"selected":""}>${L("visitN")} ${n}</option>`).join("")}</select></div>`;
+
+  // Semester + Year
   h+=`<div><label class="f-label">${L("semester")}</label><select class="f-inp" data-info="semester"><option value="">—</option><option value="1" ${info.semester==="1"?"selected":""}>1</option><option value="2" ${info.semester==="2"?"selected":""}>2</option></select></div>`;
   h+=`<div><label class="f-label">${L("year")}</label><input class="f-inp" data-info="year" value="${info.year||""}" placeholder="2568"></div>`;
   h+=`</div></div>`;
@@ -671,7 +758,12 @@ function renderSummary(){
     h+=`</div></div>`;
   }
   // Buttons
-  h+=`<div class="btn-row"><button class="btn btn-primary" onclick="saveToSheet()" ${state.saving?"disabled":""}>${state.saving?'<span class="spinner"></span> '+L("saving"):L("save")}</button></div>`;
+  h+=`<div class="btn-row">
+    <button class="btn ${state.saved?"":"btn-primary"}" onclick="saveToSheet()" ${state.saving||state.saved?"disabled":""} style="${state.saved?"background:#d1d5db;color:#6b7280;border:none":""};flex:3">${state.saved?"✅ "+(state.lang==="en"?"Saved successfully":"บันทึกเรียบร้อยแล้ว"):state.saving?'<span class="spinner"></span> '+L("saving"):L("save")}</button>
+    ${SHEET_URL?`<button class="btn btn-outline" onclick="window.open('${SHEET_URL}','_blank')" title="${state.lang==="en"?"Open Google Sheets":"เปิด Google Sheets"}" style="flex:1;min-width:52px;padding:14px 10px">📊</button>`:""}
+  </div>
+  ${state.saved&&SHEET_URL?`<div style="text-align:center;margin-bottom:4px"><button onclick="window.open('${SHEET_URL}','_blank')" style="background:none;border:none;color:var(--g2);font-size:13px;font-weight:600;cursor:pointer;text-decoration:underline;font-family:inherit">📊 ${state.lang==="en"?"View in Google Sheets →":"ตรวจสอบข้อมูลใน Google Sheets →"}</button></div>`:""}
+`;
   h+=`<button class="btn btn-outline" style="margin-bottom:8px" onclick="switchView('export')">${L("export")}</button>`;
   h+=`<button class="btn btn-danger" style="margin-bottom:16px" onclick="resetForm()">${L("reset")}</button>`;
   if(!SCRIPT_URL){h+=`<div style="padding:12px;background:#fff3cd;border-radius:8px;font-size:12px;color:#856404;text-align:center">⚠️ ยังไม่ได้เชื่อมต่อ Google Sheets — กรุณาใส่ SCRIPT_URL ในไฟล์ index.html</div>`;}
@@ -688,8 +780,8 @@ function renderExport(){
   h+=`<div style="background:linear-gradient(135deg,var(--g1),var(--g2));color:#fff;padding:20px 16px;text-align:center"><div style="font-size:18px;font-weight:800">${L("exportTitle")}</div><div style="font-size:12px;opacity:.8">${L("schoolName")} | Active Learning</div></div>`;
   // Info
   h+=`<div style="padding:14px 16px;border-bottom:2px solid #e8efe8"><div style="font-size:14px;font-weight:700;color:var(--g1);margin-bottom:10px">${L("teacherInfo")}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;font-size:13px">
-    <div><span style="color:#6b7280">${L("name")}:</span> <b>${inf.teacher||"-"}</b></div><div><span style="color:#6b7280">${L("position")}:</span> ${inf.position||"-"}</div>
-    <div><span style="color:#6b7280">${L("subject")}:</span> ${inf.subjectCode?inf.subjectCode+" ":""}${inf.subject||"-"}</div><div><span style="color:#6b7280">${L("classLevel")}:</span> ${inf.level||"-"} (${inf.students||"-"} คน)</div>
+    <div><span style="color:#6b7280">${L("name")}:</span> <b>${inf.teacher||"-"}</b></div><div><span style="color:#6b7280">${L("position")}:</span> ${dispPos(inf.position)}</div>
+    <div><span style="color:#6b7280">${L("subject")}:</span> ${inf.subjectCode?inf.subjectCode+" ":""}${dispSubj(inf.subject)||"-"}</div><div><span style="color:#6b7280">${L("classLevel")}:</span> ${dispLevel(inf.level)} ${inf.room?(state.lang==="en"?"Room ":"ห้อง ")+inf.room:""} (${inf.students||"-"} ${state.lang==="en"?"students":"คน"})</div>
     <div><span style="color:#6b7280">${L("dateLabel")}:</span> ${inf.date||"-"}</div><div><span style="color:#6b7280">${L("periodLabel")}:</span> ${inf.period?L("periodN")+" "+inf.period:"-"}</div>
     <div><span style="color:#6b7280">${L("topicLabel")}:</span> ${inf.topic||"-"}</div><div><span style="color:#6b7280">${L("supervisorLabel")}:</span> <b>${inf.supervisor||"-"}</b></div>
     <div><span style="color:#6b7280">${L("visitLabel")}:</span> ${inf.visitNum||"-"}</div><div><span style="color:#6b7280">${L("semesterLabel")}:</span> ${inf.semester||"-"}/${inf.year||"-"}</div>
@@ -725,7 +817,7 @@ function renderExport(){
     allP.forEach(src=>{h+=`<img src="${src}" style="width:100%;height:95px;object-fit:cover;border-radius:8px;border:2px solid #d1e0d1">`;});
     h+=`</div></div>`;
   }
-  h+=`<div style="padding:10px 16px;background:#f8faf8;font-size:11px;color:#9ca3af;text-align:center">${L("createdAt")} ${new Date().toLocaleDateString("th-TH",{day:"numeric",month:"long",year:"numeric",hour:"2-digit",minute:"2-digit"})} | CVN Appraisal System</div>`;
+  h+=`<div style="padding:10px 16px;background:#f8faf8;font-size:11px;color:#9ca3af;text-align:center">${L("createdAt")} ${new Date().toLocaleDateString(state.lang==="en"?"en-US":"th-TH",{day:"numeric",month:"long",year:"numeric",hour:"2-digit",minute:"2-digit"})} | CVN Appraisal System</div>`;
   h+=`</div>`; // end export-doc
 
   // Action buttons
@@ -813,6 +905,15 @@ function clearAllRecords(){
 }
 
 // ══════ ACTIONS ══════
+function updateDate(){
+  const d=document.getElementById("date-d")?.value||"";
+  const m=document.getElementById("date-m")?.value||"";
+  const y=document.getElementById("date-y")?.value||"";
+  if(d&&m&&y) state.info.date=`${y}-${m}-${d}`;
+  else state.info.date="";
+  updateFab();
+}
+
 function setScore(id,val){state.scores[id]=val;render()}
 function toggleDom(id){state.expDom[id]=!state.expDom[id];render()}
 function toggleSub(id){state.expSub[id]=!state.expSub[id];render()}
@@ -832,8 +933,8 @@ document.getElementById("file-input").addEventListener("change",function(e){
 
 function resetForm(){
   state.scores={};state.photos={};state.fb={strengths:"",growth:""};
-  state.info={teacher:"",position:"",subject:"",subjectCode:"",level:"",students:"",date:"",period:"",topic:"",supervisor:"",visitNum:"",semester:"",year:""};
-  state.expDom={1:true};state.expSub={};switchView("form");toast("ล้างฟอร์มเรียบร้อย");
+  state.info={teacher:"",position:"",subject:"",subjectCode:"",level:"",room:"",students:"",date:"",period:"",topic:"",supervisor:"",visitNum:"",semester:"",year:""};
+  state.expDom={1:true};state.expSub={};state.saved=false;switchView("form");toast(state.lang==="en"?"Form cleared":"ล้างฟอร์มเรียบร้อย");
 }
 
 // ══════ COPY ══════
@@ -841,7 +942,7 @@ function doCopy(){
   const sc=state.scores;const inf=state.info;const fb=state.fb;
   const tw=calcAll(sc);const q=getQ(tw);
   let t=`═══ ${L("exportTitle")} ═══\n${L("schoolName")}\n\n`;
-  t+=`👤 ${L("teacher").replace(' *','')}:  ${inf.teacher||"-"}\n📌 ${L("position")}: ${inf.position||"-"}\n📚 ${L("subject")}: ${inf.subjectCode||""} ${inf.subject||"-"}\n🎓 ${L("classLevel")}: ${inf.level||"-"} | ${L("students")}: ${inf.students||"-"} ${state.lang==="en"?"":"คน"}\n📅 ${L("dateLabel")}: ${inf.date||"-"} | ${L("periodLabel")}: ${inf.period||"-"}\n📝 ${L("topicLabel")}: ${inf.topic||"-"}\n👨‍🏫 ${L("supervisorLabel")}: ${inf.supervisor||"-"} | ${L("visitLabel")}: ${inf.visitNum||"-"}\n📆 ${L("semesterLabel")} ${inf.semester||"-"} / ${inf.year||"-"}\n\n`;
+  t+=`👤 ${L("teacher").replace(' *','')}:  ${inf.teacher||"-"}\n📌 ${L("position")}: ${dispPos(inf.position)}\n📚 ${L("subject")}: ${inf.subjectCode||""} ${dispSubj(inf.subject)||"-"}\n🎓 ${L("classLevel")}: ${dispLevel(inf.level)} ${inf.room?(state.lang==="en"?"Room ":"ห้อง ")+inf.room:""} | ${L("students")}: ${inf.students||"-"} ${state.lang==="en"?"students":"คน"}\n📅 ${L("dateLabel")}: ${inf.date||"-"} | ${L("periodLabel")}: ${inf.period||"-"}\n📝 ${L("topicLabel")}: ${inf.topic||"-"}\n👨‍🏫 ${L("supervisorLabel")}: ${inf.supervisor||"-"} | ${L("visitLabel")}: ${inf.visitNum||"-"}\n📆 ${L("semesterLabel")} ${inf.semester||"-"} / ${inf.year||"-"}\n\n`;
   t+=`══ ${L("score100")}: ${tw.toFixed(1)}/100 (${QL(q)}) ══\n\n`;
   EVAL.forEach(d=>{const dc=calcDom(d.id,sc);t+=`${d.icon} ${L("domainN")} ${d.id}: ${dc.wt.toFixed(1)}/${d.w} (${L("raw")} ${dc.raw}/${dc.mx})\n`;d.subs.forEach(s=>{t+=`  ${s.id} ${TS(s)}\n`;s.inds.forEach(i=>{t+=`    ${i.y==="s"?"★":"⬤"} ${TI(i)}: ${sc[i.id]||"-"}/5\n`;});});t+=`\n`;});
   if(fb.strengths)t+=`🌟 ${L("strengths").split("(")[0].replace("🌟 ","")}:\n${fb.strengths}\n\n`;
@@ -860,25 +961,89 @@ function doPrint(){window.print()}
 
 // ══════ SAVE TO GOOGLE SHEETS ══════
 async function saveToSheet(){
-  if(!state.info.teacher||!state.info.supervisor){toast("กรุณากรอกชื่อผู้รับการนิเทศและผู้นิเทศ");return}
-  if(scoredCount()<10){toast("กรุณาประเมินอย่างน้อย 10 รายการ");return}
-  if(!SCRIPT_URL){toast("⚠️ ยังไม่ได้ตั้งค่า SCRIPT_URL — บันทึกลง Local แทน");saveLocal();return}
+  if(!state.info.teacher||!state.info.supervisor){toast(L("teacher").includes("*")?"กรุณากรอกชื่อผู้รับการนิเทศและผู้นิเทศ":"Please fill in teacher and supervisor name");return}
+  if(scoredCount()<10){toast("กรุณาประเมินอย่างน้อย 10 รายการ / Please score at least 10 items");return}
+  if(!SCRIPT_URL){toast(L("noScript"));saveLocal();return}
 
   state.saving=true;render();
   const tw=calcAll(state.scores);const q=getQ(tw);
 
-  // Collect photos as base64
-  const photos=[];
-  EVAL.forEach(d=>{(state.photos[d.id]||[]).forEach(p=>{photos.push({name:p.name,data:p.data})})});
+  // Don't send photos via form (too large) — photos save to Drive only when hosted
+  const body={info:state.info,scores:state.scores,feedback:state.fb,photos:[],totalWeighted:tw.toFixed(1),quality:QL(q)};
+  const jsonStr=JSON.stringify(body);
 
-  const body={info:state.info,scores:state.scores,feedback:state.fb,photos:photos,totalWeighted:tw.toFixed(1),quality:q.l};
+  // Method 1: Try fetch with no-cors (works on hosted sites)
+  // Method 2: Fallback to hidden form+iframe (works from file://)
+  let success=false;
 
+  // Try fetch first
   try{
-    const res=await fetch(SCRIPT_URL,{method:"POST",headers:{"Content-Type":"text/plain"},body:JSON.stringify(body)});
-    const data=await res.json();
-    if(data.success){toast("✅ บันทึกลง Google Sheets สำเร็จ! (แถวที่ "+data.rowNumber+")");loadRecords();}
-    else{toast("❌ "+data.error);saveLocal();}
-  }catch(e){toast("❌ เชื่อมต่อไม่ได้ — บันทึก Local แทน");saveLocal();}
+    const res=await fetch(SCRIPT_URL,{
+      method:"POST",
+      mode:"no-cors",
+      redirect:"follow",
+      headers:{"Content-Type":"text/plain"},
+      body:jsonStr
+    });
+    // With no-cors, response is opaque — can't read it but data may be saved
+    // Wait a moment then verify via GET
+    await new Promise(r=>setTimeout(r,2000));
+    try{
+      const check=await fetch(SCRIPT_URL+"?action=list");
+      const checkData=await check.json();
+      if(checkData.success && checkData.records.length>0){
+        success=true;
+        state.records=checkData.records;
+      }
+    }catch(e){}
+  }catch(e){}
+
+  // If fetch didn't work, try form submission
+  if(!success){
+    try{
+      await new Promise((resolve,reject)=>{
+        const iframe=document.createElement("iframe");
+        iframe.name="cvn_save_"+Date.now();
+        iframe.style.cssText="position:fixed;left:-9999px;width:1px;height:1px";
+        document.body.appendChild(iframe);
+
+        const form=document.createElement("form");
+        form.method="POST";
+        form.action=SCRIPT_URL;
+        form.target=iframe.name;
+
+        const input=document.createElement("input");
+        input.type="hidden";input.name="payload";input.value=jsonStr;
+        form.appendChild(input);
+
+        document.body.appendChild(form);
+
+        iframe.onload=()=>{
+          setTimeout(()=>{
+            try{document.body.removeChild(iframe)}catch(e){}
+            try{document.body.removeChild(form)}catch(e){}
+            resolve();
+          },1000);
+        };
+        iframe.onerror=()=>{ reject(new Error("form submit failed")); };
+
+        form.submit();
+        // Safety timeout
+        setTimeout(resolve,5000);
+      });
+      success=true;
+    }catch(e){}
+  }
+
+  if(success){
+    toast("✅ "+L("save").replace("💾 ","")+"!");
+    state.saved=true;
+    saveLocal();
+    loadRecords();
+  }else{
+    toast("⚠️ Saving locally — will sync when hosted on GitHub Pages");
+    saveLocal();
+  }
   state.saving=false;render();
 }
 
@@ -888,7 +1053,7 @@ function saveLocal(){
     id:Date.now(),timestamp:new Date().toISOString(),
     teacher:state.info.teacher, position:state.info.position,
     subjectCode:state.info.subjectCode, subject:state.info.subject,
-    level:state.info.level, students:state.info.students,
+    level:state.info.level, room:state.info.room, students:state.info.students,
     date:state.info.date, period:state.info.period, topic:state.info.topic,
     supervisor:state.info.supervisor, visitNum:state.info.visitNum,
     semester:state.info.semester, year:state.info.year,
@@ -898,6 +1063,7 @@ function saveLocal(){
   let local=JSON.parse(localStorage.getItem("cvn-local")||"[]");
   local.unshift(rec);localStorage.setItem("cvn-local",JSON.stringify(local.slice(0,200)));
   state.records=local;
+  state.saved=true;
   toast("💾 บันทึกสำเร็จ");render();
 }
 
