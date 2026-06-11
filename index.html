@@ -89,14 +89,20 @@ textarea.f-inp{min-height:100px;resize:vertical}
 
 /* ══════ EXPORT / PRINT ══════ */
 .export-doc{background:#fff;border-radius:var(--radius);box-shadow:0 2px 12px rgba(0,0,0,.06);overflow:hidden;margin-bottom:var(--gap)}
+
+/* Print Overlay (works on Desktop and iOS) */
+#print-overlay{position:fixed;inset:0;background:#fff;z-index:9999;overflow-y:auto;padding:12px;font-family:'Sarabun','Noto Sans Thai',sans-serif;-webkit-overflow-scrolling:touch}
+.print-controls{position:sticky;top:0;background:#fff;padding:8px 0 12px;display:flex;gap:10px;z-index:10;border-bottom:1px solid #e0e8e0;margin-bottom:12px}
+.print-hint{background:#f0fdf4;border:2px solid #2d5a27;border-radius:10px;padding:12px;margin-bottom:16px;font-size:13px;color:#1a3a18;line-height:1.7}
+.print-content{padding-bottom:40px}
+.print-content img{max-width:120px !important;height:90px !important;object-fit:cover;border-radius:6px}
+
 @media print {
-  body > *:not(#ios-print-overlay) { display:none !important }
-  #ios-print-overlay { position:static !important; overflow:visible !important; padding:0 !important }
-  #ios-print-overlay > div:first-child { display:none !important }
-  #ios-print-overlay > div:nth-child(2) { display:none !important }
-  .header, #status-bar, #fab, #toast, .no-print { display:none !important }
-  body { background:#fff !important; padding:0 !important; margin:0 !important; font-size:12px !important }
-  .body { padding:0 !important; max-width:none !important }
+  body > *:not(#print-overlay) { display:none !important }
+  #print-overlay { position:static !important; padding:0 !important; overflow:visible !important }
+  .print-controls, .print-hint { display:none !important }
+  .print-content { padding:0 !important }
+  body { background:#fff !important; padding:0 !important; margin:0 !important; font-size:12px !important; overflow:visible !important }
   .export-doc { box-shadow:none !important; border-radius:0 !important; margin:0 !important; border:none !important }
   .export-doc * { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; color-adjust:exact !important }
   @page { size:A4; margin:10mm }
@@ -595,7 +601,12 @@ function render(){
   updateNav();updateFab();bindEvents();
 }
 
-function switchView(v){state.view=v;if(v!=="history")state.histDetail=null;render();window.scrollTo(0,0)}
+function switchView(v){
+  state.view=v;
+  if(v!=="history")state.histDetail=null;
+  if(v==="history" && SCRIPT_URL && state.records.length===0) loadRecords();
+  render();window.scrollTo(0,0);
+}
 function updateNav(){
   const btns=document.querySelectorAll(".nav button");
   const views=["form","summary","history"];
@@ -618,7 +629,7 @@ function renderForm(){
   let h=`<div class="card"><div class="card-head">${L("generalInfo")}</div><div class="grid2">`;
 
   // Teacher name (text input)
-  h+=`<div><label class="f-label">${L("teacher")}</label><input class="f-inp" data-info="teacher" value="${info.teacher||""}" placeholder="${L("teacher").replace(' *','')}"></div>`;
+  h+=`<div><label class="f-label">${L("teacher")}</label><input class="f-inp" data-info="teacher" value="${esc(info.teacher)}" placeholder="${L("teacher").replace(' *','')}"></div>`;
 
   // Position (dropdown)
   h+=`<div><label class="f-label">${L("position")}</label><select class="f-inp" data-info="position"><option value="">${sl==="en"?"— Select —":"— เลือก —"}</option>`;
@@ -626,7 +637,7 @@ function renderForm(){
   h+=`</select></div>`;
 
   // Subject code (text input)
-  h+=`<div><label class="f-label">${L("subjectCode")}</label><input class="f-inp" data-info="subjectCode" value="${info.subjectCode||""}"></div>`;
+  h+=`<div><label class="f-label">${L("subjectCode")}</label><input class="f-inp" data-info="subjectCode" value="${esc(info.subjectCode)}"></div>`;
 
   // Subject (dropdown)
   h+=`<div><label class="f-label">${L("subject")}</label><select class="f-inp" data-info="subject"><option value="">${sl==="en"?"— Select —":"— เลือก —"}</option>`;
@@ -639,7 +650,7 @@ function renderForm(){
   h+=`</select></div>`;
 
   // Room (dropdown) + Students (text)
-  h+=`<div style="display:flex;gap:10px"><div style="flex:1"><label class="f-label">${sl==="en"?"Room":"ห้อง"}</label><select class="f-inp" data-info="room"><option value="">${sl==="en"?"—":"—"}</option>${[1,2,3,4,5,6,7,8].map(n=>`<option value="${n}" ${info.room==n?"selected":""}>${n}</option>`).join("")}</select></div><div style="flex:1"><label class="f-label">${L("students")}</label><input class="f-inp" data-info="students" value="${info.students||""}"></div></div>`;
+  h+=`<div style="display:flex;gap:10px"><div style="flex:1"><label class="f-label">${sl==="en"?"Room":"ห้อง"}</label><select class="f-inp" data-info="room"><option value="">${sl==="en"?"—":"—"}</option>${[1,2,3,4,5,6,7,8].map(n=>`<option value="${n}" ${info.room==n?"selected":""}>${n}</option>`).join("")}</select></div><div style="flex:1"><label class="f-label">${L("students")}</label><input class="f-inp" data-info="students" value="${esc(info.students)}"></div></div>`;
 
   // Date + Period
   // Parse existing date value (YYYY-MM-DD)
@@ -662,15 +673,15 @@ function renderForm(){
   h+=`<div><label class="f-label">${L("period")}</label><select class="f-inp" data-info="period"><option value="">${L("selectPeriod")}</option>${[1,2,3,4,5,6].map(n=>`<option value="${n}" ${info.period==n?"selected":""}>${L("periodN")} ${n}</option>`).join("")}</select></div>`;
 
   // Topic (full width)
-  h+=`<div class="full"><label class="f-label">${L("topic")}</label><input class="f-inp" data-info="topic" value="${info.topic||""}" placeholder="${L("topic")}"></div>`;
+  h+=`<div class="full"><label class="f-label">${L("topic")}</label><input class="f-inp" data-info="topic" value="${esc(info.topic)}" placeholder="${L("topic")}"></div>`;
 
   // Supervisor + Visit
-  h+=`<div><label class="f-label">${L("supervisor")}</label><input class="f-inp" data-info="supervisor" value="${info.supervisor||""}"></div>`;
+  h+=`<div><label class="f-label">${L("supervisor")}</label><input class="f-inp" data-info="supervisor" value="${esc(info.supervisor)}"></div>`;
   h+=`<div><label class="f-label">${L("visitNum")}</label><select class="f-inp" data-info="visitNum"><option value="">${L("selectVisit")}</option>${[1,2,3,4,5,6].map(n=>`<option value="${n}" ${info.visitNum==n?"selected":""}>${L("visitN")} ${n}</option>`).join("")}</select></div>`;
 
   // Semester + Year
   h+=`<div><label class="f-label">${L("semester")}</label><select class="f-inp" data-info="semester"><option value="">—</option><option value="1" ${info.semester==="1"?"selected":""}>1</option><option value="2" ${info.semester==="2"?"selected":""}>2</option></select></div>`;
-  h+=`<div><label class="f-label">${L("year")}</label><input class="f-inp" data-info="year" value="${info.year||""}" placeholder="2568"></div>`;
+  h+=`<div><label class="f-label">${L("year")}</label><input class="f-inp" data-info="year" value="${esc(info.year)}" placeholder="2568"></div>`;
   h+=`</div></div>`;
 
   // Legend
@@ -724,8 +735,8 @@ function renderForm(){
 
   // Feedback
   h+=`<div class="card"><div class="card-head">${L("feedback")}</div><div style="padding:14px;display:flex;flex-direction:column;gap:14px">
-    <div><label style="font-size:13px;font-weight:700;color:#15803d;margin-bottom:6px;display:block">${L("strengths")}</label><textarea class="f-inp" data-fb="strengths" placeholder="${L("strengthsP")}">${state.fb.strengths}</textarea></div>
-    <div><label style="font-size:13px;font-weight:700;color:#c2410c;margin-bottom:6px;display:block">${L("growth")}</label><textarea class="f-inp" data-fb="growth" placeholder="${L("growthP")}">${state.fb.growth}</textarea></div>
+    <div><label style="font-size:13px;font-weight:700;color:#15803d;margin-bottom:6px;display:block">${L("strengths")}</label><textarea class="f-inp" data-fb="strengths" placeholder="${L("strengthsP")}">${esc(state.fb.strengths)}</textarea></div>
+    <div><label style="font-size:13px;font-weight:700;color:#c2410c;margin-bottom:6px;display:block">${L("growth")}</label><textarea class="f-inp" data-fb="growth" placeholder="${L("growthP")}">${esc(state.fb.growth)}</textarea></div>
   </div></div>`;
   return h;
 }
@@ -738,7 +749,7 @@ function renderSummary(){
     <div style="font-size:52px;font-weight:900;color:${q.c};line-height:1">${tw.toFixed(1)}</div>
     <div style="font-size:13px;color:#6b7280">${L("score100")}</div>
     <div style="font-size:20px;font-weight:700;color:${q.c};margin-top:4px">${QL(q)}</div>
-    ${state.info.teacher?`<div style="font-size:14px;color:#4a5e4a;margin-top:12px"><b>${state.info.teacher}</b> | ${L("supervisorLabel")}: <b>${state.info.supervisor}</b></div>`:""}
+    ${state.info.teacher?`<div style="font-size:14px;color:#4a5e4a;margin-top:12px"><b>${esc(state.info.teacher)}</b> | ${L("supervisorLabel")}: <b>${esc(state.info.supervisor)}</b></div>`:""}
   </div>`;
   // Domain breakdown
   h+=`<div class="card"><div style="padding:12px 16px;border-bottom:1px solid #e8efe8;font-weight:700;font-size:15px;color:var(--g1)">${L("domainBreakdown")}</div>`;
@@ -750,8 +761,8 @@ function renderSummary(){
   // Feedback
   if(state.fb.strengths||state.fb.growth){
     h+=`<div class="card"><div style="padding:12px 16px;border-bottom:1px solid #e8efe8;font-weight:700;font-size:15px;color:var(--g1)">💬 ${L("feedback").replace("💬 ","")}</div>`;
-    if(state.fb.strengths) h+=`<div style="padding:10px 16px;border-bottom:1px solid #f0f5f0"><div style="font-size:12px;font-weight:700;color:#15803d;margin-bottom:3px">🌟 ${L("strengths").split("(")[0].replace("🌟 ","")}</div><div style="font-size:13px;line-height:1.6">${state.fb.strengths}</div></div>`;
-    if(state.fb.growth) h+=`<div style="padding:10px 16px"><div style="font-size:12px;font-weight:700;color:#c2410c;margin-bottom:3px">🔧 ${L("growth").split("(")[0].replace("🔧 ","")}</div><div style="font-size:13px;line-height:1.6">${state.fb.growth}</div></div>`;
+    if(state.fb.strengths) h+=`<div style="padding:10px 16px;border-bottom:1px solid #f0f5f0"><div style="font-size:12px;font-weight:700;color:#15803d;margin-bottom:3px">🌟 ${L("strengths").split("(")[0].replace("🌟 ","")}</div><div style="font-size:13px;line-height:1.6">${esc(state.fb.strengths)}</div></div>`;
+    if(state.fb.growth) h+=`<div style="padding:10px 16px"><div style="font-size:12px;font-weight:700;color:#c2410c;margin-bottom:3px">🔧 ${L("growth").split("(")[0].replace("🔧 ","")}</div><div style="font-size:13px;line-height:1.6">${esc(state.fb.growth)}</div></div>`;
     h+=`</div>`;
   }
   // Photos
@@ -784,11 +795,11 @@ function renderExport(){
   h+=`<div style="background:linear-gradient(135deg,var(--g1),var(--g2));color:#fff;padding:20px 16px;text-align:center"><div style="font-size:18px;font-weight:800">${L("exportTitle")}</div><div style="font-size:12px;opacity:.8">${L("schoolName")} | Active Learning</div></div>`;
   // Info
   h+=`<div style="padding:14px 16px;border-bottom:2px solid #e8efe8"><div style="font-size:14px;font-weight:700;color:var(--g1);margin-bottom:10px">${L("teacherInfo")}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;font-size:13px">
-    <div><span style="color:#6b7280">${L("name")}:</span> <b>${inf.teacher||"-"}</b></div><div><span style="color:#6b7280">${L("position")}:</span> ${dispPos(inf.position)}</div>
-    <div><span style="color:#6b7280">${L("subject")}:</span> ${inf.subjectCode?inf.subjectCode+" ":""}${dispSubj(inf.subject)||"-"}</div><div><span style="color:#6b7280">${L("classLevel")}:</span> ${dispLevel(inf.level)} ${inf.room?(state.lang==="en"?"Room ":"ห้อง ")+inf.room:""} (${inf.students||"-"} ${state.lang==="en"?"students":"คน"})</div>
+    <div><span style="color:#6b7280">${L("name")}:</span> <b>${esc(inf.teacher||"-")}</b></div><div><span style="color:#6b7280">${L("position")}:</span> ${dispPos(inf.position)}</div>
+    <div><span style="color:#6b7280">${L("subject")}:</span> ${esc(inf.subjectCode?inf.subjectCode+" ":"")}${esc(dispSubj(inf.subject)||"-")}</div><div><span style="color:#6b7280">${L("classLevel")}:</span> ${dispLevel(inf.level)} ${inf.room?(state.lang==="en"?"Room ":"ห้อง ")+inf.room:""} (${esc(inf.students||"-")} ${state.lang==="en"?"students":"คน"})</div>
     <div><span style="color:#6b7280">${L("dateLabel")}:</span> ${inf.date||"-"}</div><div><span style="color:#6b7280">${L("periodLabel")}:</span> ${inf.period?L("periodN")+" "+inf.period:"-"}</div>
-    <div><span style="color:#6b7280">${L("topicLabel")}:</span> ${inf.topic||"-"}</div><div><span style="color:#6b7280">${L("supervisorLabel")}:</span> <b>${inf.supervisor||"-"}</b></div>
-    <div><span style="color:#6b7280">${L("visitLabel")}:</span> ${inf.visitNum||"-"}</div><div><span style="color:#6b7280">${L("semesterLabel")}:</span> ${inf.semester||"-"}/${inf.year||"-"}</div>
+    <div><span style="color:#6b7280">${L("topicLabel")}:</span> ${esc(inf.topic||"-")}</div><div><span style="color:#6b7280">${L("supervisorLabel")}:</span> <b>${esc(inf.supervisor||"-")}</b></div>
+    <div><span style="color:#6b7280">${L("visitLabel")}:</span> ${inf.visitNum||"-"}</div><div><span style="color:#6b7280">${L("semesterLabel")}:</span> ${inf.semester||"-"}/${esc(inf.year||"-")}</div>
   </div></div>`;
   // Score Hero
   h+=`<div style="text-align:center;padding:20px 16px;background:${q.bg};border-bottom:2px solid #e8efe8"><div style="font-size:40px">${q.e}</div><div style="font-size:48px;font-weight:900;color:${q.c}">${tw.toFixed(1)}<span style="font-size:20px;font-weight:400">/100</span></div><div style="font-size:18px;font-weight:700;color:${q.c}">${L("qualityLevel")}: ${QL(q)}</div></div>`;
@@ -810,8 +821,8 @@ function renderExport(){
   // Feedback
   if(fb.strengths||fb.growth){
     h+=`<div style="padding:14px 16px;border-top:2px solid #e8efe8"><div style="font-size:14px;font-weight:700;color:var(--g1);margin-bottom:10px">💬 ${L("feedback").replace("💬 ","")}</div>`;
-    if(fb.strengths) h+=`<div style="margin-bottom:10px"><div style="font-size:12px;font-weight:700;color:#15803d;margin-bottom:3px">🌟 ${L("strengths").split("(")[0].replace("🌟 ","")}</div><div style="font-size:13px;line-height:1.6;padding:8px 12px;background:#f0fdf4;border-radius:8px;border-left:3px solid #15803d">${fb.strengths}</div></div>`;
-    if(fb.growth) h+=`<div><div style="font-size:12px;font-weight:700;color:#c2410c;margin-bottom:3px">🔧 ${L("growth").split("(")[0].replace("🔧 ","")}</div><div style="font-size:13px;line-height:1.6;padding:8px 12px;background:#fff7ed;border-radius:8px;border-left:3px solid #c2410c">${fb.growth}</div></div>`;
+    if(fb.strengths) h+=`<div style="margin-bottom:10px"><div style="font-size:12px;font-weight:700;color:#15803d;margin-bottom:3px">🌟 ${L("strengths").split("(")[0].replace("🌟 ","")}</div><div style="font-size:13px;line-height:1.6;padding:8px 12px;background:#f0fdf4;border-radius:8px;border-left:3px solid #15803d">${esc(fb.strengths)}</div></div>`;
+    if(fb.growth) h+=`<div><div style="font-size:12px;font-weight:700;color:#c2410c;margin-bottom:3px">🔧 ${L("growth").split("(")[0].replace("🔧 ","")}</div><div style="font-size:13px;line-height:1.6;padding:8px 12px;background:#fff7ed;border-radius:8px;border-left:3px solid #c2410c">${esc(fb.growth)}</div></div>`;
     h+=`</div>`;
   }
   // Photos
@@ -832,19 +843,40 @@ function renderExport(){
 }
 
 // ══════ HISTORY VIEW ══════
+// Helper: extract scores object from record (supports both nested + flat formats)
+function recScores(r){
+  if(r.scores && typeof r.scores==="object") return r.scores;
+  const out={};
+  // Flat format from Google Sheets: score_1.1.1, score_1.1.2, ...
+  Object.keys(r).forEach(k=>{
+    if(k.startsWith("score_")){
+      const id=k.replace("score_","");
+      const v=parseInt(r[k]);
+      if(!isNaN(v)&&v>=1&&v<=5) out[id]=v;
+    }
+  });
+  return out;
+}
+// Helper: extract feedback from record
+function recFb(r){
+  if(r.fb && typeof r.fb==="object") return r.fb;
+  return {strengths:r.feedback_strengths||"",growth:r.feedback_growth||""};
+}
+
 function renderHistory(){
   // Detail view
   if(state.histDetail){
     const r=state.histDetail;
     const tw=parseFloat(r.total_weighted)||0;const rq=getQ(tw);
-    const rsc=r.scores||{};
+    const rsc=recScores(r);
+    const rfb=recFb(r);
     let h=`<button class="btn btn-outline" style="width:auto;padding:8px 14px;margin-bottom:10px;font-size:13px" onclick="state.histDetail=null;render()">${L("back")}</button>`;
     h+=`<div class="card" style="text-align:center;padding:24px 16px;background:linear-gradient(135deg,${rq.bg},#fff)">
       <div style="font-size:40px">${rq.e}</div>
       <div style="font-size:42px;font-weight:900;color:${rq.c}">${tw.toFixed(1)}/100</div>
       <div style="font-size:18px;font-weight:700;color:${rq.c}">${rq.l}</div>
       <div style="font-size:14px;color:#4a5e4a;margin-top:10px"><b>${r.teacher||"-"}</b></div>
-      <div style="font-size:12px;color:#9ca3af">${r.subject||"-"} | ${L("supervisorLabel")}: ${r.supervisor||"-"}</div>
+      <div style="font-size:12px;color:#9ca3af">${dispSubj(r.subject)||"-"} | ${L("supervisorLabel")}: ${r.supervisor||"-"}</div>
       <div style="font-size:11px;color:#9ca3af">${r.timestamp?new Date(r.timestamp).toLocaleDateString(state.lang==="en"?"en-US":"th-TH",{day:"numeric",month:"long",year:"numeric"}):""}  | ${L("periodN")} ${r.period||"-"} | ${L("visitN")} ${r.visitNum||"-"}</div>
     </div>`;
     // Domain scores
@@ -866,15 +898,16 @@ function renderHistory(){
     });
     h+=`</div>`;
     // Feedback
-    const rfb=r.fb||{};
     if(rfb.strengths||rfb.growth){
       h+=`<div class="card"><div style="padding:12px 16px;font-weight:700;font-size:15px;color:var(--g1);border-bottom:1px solid #e8efe8">💬 ${L("feedback").replace("💬 ","")}</div>`;
-      if(rfb.strengths) h+=`<div style="padding:10px 16px;border-bottom:1px solid #f0f5f0"><div style="font-size:12px;font-weight:700;color:#15803d;margin-bottom:3px">🌟 ${L("strengths").split("(")[0].replace("🌟 ","")}</div><div style="font-size:13px;line-height:1.6">${rfb.strengths}</div></div>`;
-      if(rfb.growth) h+=`<div style="padding:10px 16px"><div style="font-size:12px;font-weight:700;color:#c2410c;margin-bottom:3px">🔧 ${L("growth").split("(")[0].replace("🔧 ","")}</div><div style="font-size:13px;line-height:1.6">${rfb.growth}</div></div>`;
+      if(rfb.strengths) h+=`<div style="padding:10px 16px;border-bottom:1px solid #f0f5f0"><div style="font-size:12px;font-weight:700;color:#15803d;margin-bottom:3px">🌟 ${L("strengths").split("(")[0].replace("🌟 ","")}</div><div style="font-size:13px;line-height:1.6">${esc(rfb.strengths)}</div></div>`;
+      if(rfb.growth) h+=`<div style="padding:10px 16px"><div style="font-size:12px;font-weight:700;color:#c2410c;margin-bottom:3px">🔧 ${L("growth").split("(")[0].replace("🔧 ","")}</div><div style="font-size:13px;line-height:1.6">${esc(rfb.growth)}</div></div>`;
       h+=`</div>`;
     }
-    // Delete button
-    h+=`<button class="btn btn-danger" style="margin-bottom:16px" onclick="deleteRecord(${r.id})">${L("deleteThis")}</button>`;
+    // Delete button (only for local records)
+    if(r.id){
+      h+=`<button class="btn btn-danger" style="margin-bottom:16px" onclick="deleteRecord(${r.id})">${L("deleteThis")}</button>`;
+    }
     return h;
   }
 
@@ -885,7 +918,7 @@ function renderHistory(){
   } else {
     state.records.forEach((r,idx)=>{
       const tw=parseFloat(r.total_weighted)||0;const rq=getQ(tw);
-      h+=`<div class="card" style="cursor:pointer" onclick="viewRecord(${idx})"><div style="padding:12px 16px;display:flex;align-items:center;gap:10px"><div style="width:46px;height:46px;border-radius:10px;background:${rq.bg};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px">${rq.e}</div><div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:700;color:var(--g1)">${r.teacher||"-"}</div><div style="font-size:11px;color:#6b7280">${r.subject||r.level||"-"} | ${L("visitN")} ${r.visitNum||"-"} | ${L("periodN")} ${r.period||"-"}</div><div style="font-size:10px;color:#9ca3af">${r.timestamp?new Date(r.timestamp).toLocaleDateString(state.lang==="en"?"en-US":"th-TH",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}):""}</div></div><div style="text-align:right;flex-shrink:0"><div style="font-size:18px;font-weight:900;color:${rq.c}">${tw.toFixed(0)}</div><span class="badge" style="background:${rq.bg};color:${rq.c}">${QL(rq)}</span></div></div></div>`;
+      h+=`<div class="card" style="cursor:pointer" onclick="viewRecord(${idx})"><div style="padding:12px 16px;display:flex;align-items:center;gap:10px"><div style="width:46px;height:46px;border-radius:10px;background:${rq.bg};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px">${rq.e}</div><div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:700;color:var(--g1)">${r.teacher||"-"}</div><div style="font-size:11px;color:#6b7280">${dispSubj(r.subject)||dispLevel(r.level)||"-"} | ${L("visitN")} ${r.visitNum||"-"} | ${L("periodN")} ${r.period||"-"}</div><div style="font-size:10px;color:#9ca3af">${r.timestamp?new Date(r.timestamp).toLocaleDateString(state.lang==="en"?"en-US":"th-TH",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}):""}</div></div><div style="text-align:right;flex-shrink:0"><div style="font-size:18px;font-weight:900;color:${rq.c}">${tw.toFixed(0)}</div><span class="badge" style="background:${rq.bg};color:${rq.c}">${QL(rq)}</span></div></div></div>`;
     });
     h+=`<button class="btn btn-danger" style="margin-top:8px;margin-bottom:16px" onclick="clearAllRecords()">${L("clearAll")}</button>`;
   }
@@ -893,7 +926,11 @@ function renderHistory(){
   return h;
 }
 
-function viewRecord(idx){state.histDetail=state.records[idx];render();window.scrollTo(0,0)}
+function viewRecord(idx){
+  const r=state.records[idx];
+  if(!r){toast(state.lang==="en"?"Record not found":"ไม่พบข้อมูล");return;}
+  state.histDetail=r;render();window.scrollTo(0,0);
+}
 
 function deleteRecord(id){
   if(!confirm(L("confirmDelete"))) return;
@@ -918,7 +955,13 @@ function updateDate(){
   updateFab();
 }
 
-function setScore(id,val){state.scores[id]=val;render()}
+function setScore(id,val){
+  // Validate: must be integer 1-5
+  const v=parseInt(val);
+  if(isNaN(v)||v<1||v>5){return;}
+  state.scores[id]=v;
+  render();
+}
 function toggleDom(id){state.expDom[id]=!state.expDom[id];render()}
 function toggleSub(id){state.expSub[id]=!state.expSub[id];render()}
 function uploadPhoto(did){state.uploadTarget=did;document.getElementById("file-input").click()}
@@ -946,7 +989,7 @@ function doCopy(){
   const sc=state.scores;const inf=state.info;const fb=state.fb;
   const tw=calcAll(sc);const q=getQ(tw);
   let t=`═══ ${L("exportTitle")} ═══\n${L("schoolName")}\n\n`;
-  t+=`👤 ${L("teacher").replace(' *','')}:  ${inf.teacher||"-"}\n📌 ${L("position")}: ${dispPos(inf.position)}\n📚 ${L("subject")}: ${inf.subjectCode||""} ${dispSubj(inf.subject)||"-"}\n🎓 ${L("classLevel")}: ${dispLevel(inf.level)} ${inf.room?(state.lang==="en"?"Room ":"ห้อง ")+inf.room:""} | ${L("students")}: ${inf.students||"-"} ${state.lang==="en"?"students":"คน"}\n📅 ${L("dateLabel")}: ${inf.date||"-"} | ${L("periodLabel")}: ${inf.period||"-"}\n📝 ${L("topicLabel")}: ${inf.topic||"-"}\n👨‍🏫 ${L("supervisorLabel")}: ${inf.supervisor||"-"} | ${L("visitLabel")}: ${inf.visitNum||"-"}\n📆 ${L("semesterLabel")} ${inf.semester||"-"} / ${inf.year||"-"}\n\n`;
+  t+=`👤 ${L("teacher").replace(' *','')}:  ${inf.teacher||"-"}\n📌 ${L("position")}: ${dispPos(inf.position)}\n📚 ${L("subject")}: ${inf.subjectCode||""} ${dispSubj(inf.subject)||"-"}\n🎓 ${L("classLevel")}: ${dispLevel(inf.level)} ${inf.room?(state.lang==="en"?"Room ":"ห้อง ")+inf.room:""} | ${L("students")}: ${esc(inf.students||"-")} ${state.lang==="en"?"students":"คน"}\n📅 ${L("dateLabel")}: ${inf.date||"-"} | ${L("periodLabel")}: ${inf.period||"-"}\n📝 ${L("topicLabel")}: ${inf.topic||"-"}\n👨‍🏫 ${L("supervisorLabel")}: ${inf.supervisor||"-"} | ${L("visitLabel")}: ${inf.visitNum||"-"}\n📆 ${L("semesterLabel")} ${inf.semester||"-"} / ${esc(inf.year||"-")}\n\n`;
   t+=`══ ${L("score100")}: ${tw.toFixed(1)}/100 (${QL(q)}) ══\n\n`;
   EVAL.forEach(d=>{const dc=calcDom(d.id,sc);t+=`${d.icon} ${L("domainN")} ${d.id}: ${dc.wt.toFixed(1)}/${d.w} (${L("raw")} ${dc.raw}/${dc.mx})\n`;d.subs.forEach(s=>{t+=`  ${s.id} ${TS(s)}\n`;s.inds.forEach(i=>{t+=`    ${i.y==="s"?"★":"⬤"} ${TI(i)}: ${sc[i.id]||"-"}/5\n`;});});t+=`\n`;});
   if(fb.strengths)t+=`🌟 ${L("strengths").split("(")[0].replace("🌟 ","")}:\n${fb.strengths}\n\n`;
@@ -963,44 +1006,36 @@ function doCopy(){
 // ══════ PRINT / PDF ══════
 function doPrint(){
   const el=document.getElementById("print-area");
-  if(!el) return;
-  const isMobile=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-  const isIOS=/iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if(!el){toast("ไม่พบข้อมูลสรุป / Summary not found");return;}
 
-  if(isIOS){
-    // iOS: inject full-screen print overlay, then use Safari Share → Print
-    const overlay=document.createElement("div");
-    overlay.id="ios-print-overlay";
-    overlay.style.cssText="position:fixed;inset:0;background:#fff;z-index:9999;overflow-y:auto;padding:16px;font-family:'Sarabun','Noto Sans Thai',sans-serif";
+  // Create a clean fullscreen overlay that contains ONLY the summary
+  // This works for both desktop print and iOS Safari Share→Print
+  let overlay=document.getElementById("print-overlay");
+  if(overlay) overlay.remove();
 
-    const closeBtn=document.createElement("div");
-    closeBtn.style.cssText="position:sticky;top:0;background:#fff;padding:8px 0 12px;display:flex;gap:10px;z-index:1";
-    closeBtn.innerHTML=`
-      <button onclick="document.getElementById('ios-print-overlay').remove()" style="flex:1;padding:12px;background:#f3f4f6;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">✕ ปิด / Close</button>
-      <button onclick="window.print()" style="flex:2;padding:12px;background:#2d5a27;color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">📤 Share → Print → Save PDF</button>`;
-
-    const hint=document.createElement("div");
-    hint.style.cssText="background:#f0fdf4;border:2px solid #2d5a27;border-radius:10px;padding:12px;margin-bottom:12px;font-size:13px;color:#1a3a18;line-height:1.6";
-    hint.innerHTML=`<b>📲 วิธี Save PDF บน iPhone:</b><br>1. กดปุ่ม <b>Share → Print → Save PDF</b> ด้านบน<br>2. หรือกดปุ่ม <b>Share (□↑)</b> ที่ toolbar ของ Safari<br>3. เลือก <b>"Print"</b> → กด Share อีกครั้ง → <b>"Save to Files"</b>`;
-
-    const content=document.createElement("div");
-    content.innerHTML=el.outerHTML;
-
-    overlay.appendChild(closeBtn);
-    overlay.appendChild(hint);
-    overlay.appendChild(content);
-    document.body.appendChild(overlay);
-    window.scrollTo(0,0);
-
-    toast("กด Share (□↑) ใน Safari → Print → Save to Files");
-
-  } else if(/Android/i.test(navigator.userAgent)){
-    // Android Chrome: try print directly
-    window.print();
-  } else {
-    // Desktop
-    window.print();
-  }
+  overlay=document.createElement("div");
+  overlay.id="print-overlay";
+  overlay.innerHTML=`
+    <div class="print-controls">
+      <button onclick="closePrintOverlay()" style="flex:1;padding:14px;background:#f3f4f6;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">✕ ปิด / Close</button>
+      <button onclick="window.print()" style="flex:2;padding:14px;background:#2d5a27;color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">🖨️ Print / Save PDF</button>
+    </div>
+    <div class="print-hint">
+      <b>💡 ${state.lang==="en"?"How to Save as PDF":"วิธีบันทึกเป็น PDF"}:</b><br>
+      <b>${state.lang==="en"?"Desktop":"คอม"}:</b> ${state.lang==="en"?"Click Print button → Select 'Save as PDF'":"กดปุ่ม Print → เลือก 'Save as PDF'"}<br>
+      <b>iPhone:</b> ${state.lang==="en"?"Tap Share (□↑) at bottom → Print → Tap Share again → Save to Files":"กด Share (□↑) ด้านล่าง Safari → Print → กด Share อีกครั้ง → Save to Files"}<br>
+      <b>Android:</b> ${state.lang==="en"?"Menu (⋮) → Share → Print → Save as PDF":"เมนู (⋮) → Share → Print → Save as PDF"}
+    </div>
+    <div class="print-content">${el.outerHTML}</div>
+  `;
+  document.body.appendChild(overlay);
+  document.body.style.overflow="hidden";
+  window.scrollTo(0,0);
+}
+function closePrintOverlay(){
+  const o=document.getElementById("print-overlay");
+  if(o) o.remove();
+  document.body.style.overflow="";
 }
 
 // ══════ SAVE TO GOOGLE SHEETS ══════
@@ -1126,6 +1161,12 @@ async function loadRecords(){
 }
 
 // ══════ BIND EVENTS ══════
+// HTML escape to prevent XSS and broken HTML from user input
+function esc(s){
+  if(s==null) return "";
+  return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
 function bindEvents(){
   document.querySelectorAll("[data-info]").forEach(el=>{
     el.addEventListener("input",e=>{state.info[e.target.dataset.info]=e.target.value});
