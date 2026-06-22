@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CVN SITMAP — แบบนิเทศการสอนประถมศึกษา</title>
+<title>CVN SITMAP — แบบนิเทศการสอน ระดับอนุบาล</title>
 <style>
 :root {
   --g1:#1a3a18; --g2:#2d5a27; --g3:#4a7c44; --gold:#c9a84c;
@@ -204,7 +204,7 @@ textarea.f-inp{min-height:100px;resize:vertical}
 <div class="header">
   <div class="header-inner">
     <svg width="46" height="46" viewBox="0 0 120 120"><defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2d5a27"/><stop offset="100%" stop-color="#1a3a18"/></linearGradient></defs><path d="M60 8 L108 28 Q112 30 112 34 L112 60 Q112 90 60 114 Q8 90 8 60 L8 34 Q8 30 12 28 Z" fill="url(#sg)" stroke="#c9a84c" stroke-width="4"/><text x="60" y="68" text-anchor="middle" font-family="Georgia,serif" font-size="36" font-weight="bold" fill="white" letter-spacing="3">CVN</text><path d="M42 30 L60 22 L78 30" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"/><path d="M40 82 Q50 78 60 82 Q70 78 80 82" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"/></svg>
-    <div style="flex:1"><h1 id="h-title">โรงเรียนจารุวัฒนานุกูล</h1><p id="h-sub">📋 SITMAP — แบบนิเทศประถมศึกษา</p></div>
+    <div style="flex:1"><h1 id="h-title">โรงเรียนจารุวัฒนานุกูล</h1><p id="h-sub">📋 SITMAP — แบบนิเทศการสอน ระดับอนุบาล</p></div>
     <button class="lang-btn" onclick="toggleLang()" id="lang-btn">🇬🇧 EN</button>
     <button class="lang-btn" onclick="lockSystem()" id="lock-btn" title="Lock System" style="padding:6px 12px">🔒</button>
   </div>
@@ -226,8 +226,8 @@ textarea.f-inp{min-height:100px;resize:vertical}
 // ══════════════════════════════════════════════════════════════
 //  CONFIGURATION
 // ══════════════════════════════════════════════════════════════
-const SCRIPT_URL = "";  // ← วาง URL ของ Apps Script (สำหรับ SITMAP ใหม่)
-const SHEET_URL  = "";  // ← วาง URL ของ Google Sheets
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzARJwEIuBFvmipZ11dFdMMWboaZYBHcqR6aFQJSpoLjluaVEO1wfR96shX_waPUeVd/exec";  // ← วาง URL ของ Apps Script (สำหรับ SITMAP ใหม่)
+const SHEET_URL  = "https://docs.google.com/spreadsheets/d/1DTr_Wa8D0kgDLcM2yaLN8rAqZYVNaAWVDiUvM0wllA8/edit";  // ← วาง URL ของ Google Sheets
 
 const HISTORY_PIN = "cvn4167070tc";
 const MASTER_PIN  = "CVN-Admin-2518";
@@ -314,7 +314,7 @@ function SL(v){return state.lang==="en"?SL_EN[v]:SL_TH[v]}
 // ══════════════════════════════════════════════════════════════
 const UI = {
 th:{
-  schoolName:"โรงเรียนจารุวัฒนานุกูล", schoolSub:"📋 SITMAP — แบบนิเทศประถมศึกษา",
+  schoolName:"โรงเรียนจารุวัฒนานุกูล", schoolSub:"📋 SITMAP — แบบนิเทศการสอน ระดับอนุบาล",
   navForm:"📝 ฟอร์ม", navSummary:"📊 สรุปผล", navHistory:"📚 ประวัติ",
   generalInfo:"📋 ข้อมูลทั่วไป", teacher:"ชื่อครูผู้สอน *", visitNum:"ครั้งที่นิเทศ",
   semester:"ภาคเรียน", year:"ปีการศึกษา", classLevel:"ชั้น", unit:"หน่วยการเรียนรู้",
@@ -341,7 +341,7 @@ th:{
   createdAt:"สร้างเมื่อ", selectN:"— เลือก —"
 },
 en:{
-  schoolName:"Charuvatananukul School", schoolSub:"📋 SITMAP — Elementary Supervision Form",
+  schoolName:"Charuvatananukul School", schoolSub:"📋 SITMAP — Kindergarten Supervision Form",
   navForm:"📝 Form", navSummary:"📊 Summary", navHistory:"📚 History",
   generalInfo:"📋 General Information", teacher:"Teacher Name *", visitNum:"Visit No.",
   semester:"Semester", year:"Academic Year", classLevel:"Class", unit:"Learning Unit",
@@ -502,7 +502,7 @@ function updateNav(){
 function updateFab(){
   const fab = document.getElementById("fab");
   const n = scoredCount();
-  if(state.view === "form" && n > 0){
+  if(state.systemUnlocked && state.view === "form" && n > 0){
     const tw = calcAll(state.scores); const q = getQ(tw);
     fab.style.display = "flex";
     fab.innerHTML = `${q.e} ${tw.toFixed(1)}/100 → ${L("navSummary").replace("📊 ","")}`;
@@ -1006,6 +1006,7 @@ function checkSystemPin(){
   if(!input) return;
   const val = input.value.trim();
   if(val === ACCESS_PIN || val === HISTORY_PIN || val === MASTER_PIN){
+    const wasLocked = !state.systemUnlocked;
     state.systemUnlocked = true;
     sessionStorage.setItem("cvn-sitmap-system-unlocked", "1");
     if(val === HISTORY_PIN || val === MASTER_PIN){
@@ -1014,6 +1015,17 @@ function checkSystemPin(){
     }
     render();
     toast(state.lang==="en"?"🔓 Welcome":"🔓 ยินดีต้อนรับ");
+    // Connect to Sheets on first unlock
+    if(wasLocked && SCRIPT_URL){
+      const bar = document.getElementById("status-bar");
+      if(bar){
+        bar.style.display = "block"; bar.textContent = "🔄 Connecting..."; bar.className = "status-bar";
+        loadRecords().then(() => {
+          bar.textContent = "✅ Connected"; bar.className = "status-bar connected";
+          setTimeout(() => bar.style.display = "none", 3000);
+        }).catch(() => {bar.textContent = "❌ Connection failed"; bar.className = "status-bar error"});
+      }
+    }
   } else {
     if(errBox) errBox.textContent = state.lang==="en"?"❌ Incorrect PIN":"❌ รหัส PIN ไม่ถูกต้อง";
     input.value = ""; input.focus();
@@ -1140,8 +1152,8 @@ async function saveToSheet(){
   if(!state.info.teacher || !state.info.supervisor){
     toast(state.lang==="en"?"Please fill teacher and supervisor":"กรุณากรอกชื่อครูและผู้นิเทศ"); return;
   }
-  if(scoredCount() < 10){
-    toast(state.lang==="en"?"Score at least 10 items":"กรุณาประเมินอย่างน้อย 10 ข้อ"); return;
+  if(scoredCount() < 15){
+    toast(state.lang==="en"?"Score at least 15 items":"กรุณาประเมินอย่างน้อย 15 ข้อ"); return;
   }
 
   const dup = checkDuplicate();
@@ -1260,9 +1272,14 @@ function bindEvents(){
 function init(){
   if(sessionStorage.getItem("cvn-sitmap-system-unlocked") === "1") state.systemUnlocked = true;
   if(sessionStorage.getItem("cvn-sitmap-history-unlocked") === "1") state.historyUnlocked = true;
-  loadRecords();
+
+  // Load local records first (instant)
+  const local = JSON.parse(localStorage.getItem("cvn-sitmap-local") || "[]");
+  state.records = local;
   render();
-  if(SCRIPT_URL){
+
+  // Only attempt to connect to Google Sheets when system is unlocked
+  if(state.systemUnlocked && SCRIPT_URL){
     const bar = document.getElementById("status-bar");
     bar.style.display = "block"; bar.textContent = "🔄 Connecting..."; bar.className = "status-bar";
     loadRecords().then(() => {
