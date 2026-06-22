@@ -259,6 +259,15 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxcv_jp0D0Kcknl8sV6g
 const SHEET_URL  = "https://docs.google.com/spreadsheets/d/1UAmo50RcUrbbX-qnl-hwHvAvVJgOJqR4OqgqgdpaFBQ/edit"; // ← วาง URL ของ Google Sheets ที่นี่ (เปิด Sheets แล้วคัดลอก URL จาก address bar)
 
 // ══════════════════════════════════════════════════════════════
+//  🔐 SECURITY — PIN PROTECTION FOR HISTORY TAB
+//  PIN ปกติ ใช้สำหรับครูนิเทศ บอกได้ จดได้ เปลี่ยนได้
+//  MASTER_PIN ห้ามบอกใคร เก็บไว้คนเดียว เผื่อฉุกเฉิน
+// ══════════════════════════════════════════════════════════════
+const HISTORY_PIN = "cvn4167070tc";      // ← PIN สำหรับทีมนิเทศ (ตัวอักษร+ตัวเลข)
+const MASTER_PIN  = "CVN-Admin-2518";    // ← Master PIN สำหรับ Admin (อย่าบอกใคร)
+const DUPLICATE_CHECK_HOURS = 24;        // ← ตรวจจับบันทึกซ้ำใน X ชั่วโมง
+
+// ══════════════════════════════════════════════════════════════
 //  BILINGUAL SYSTEM (TH/EN)
 // ══════════════════════════════════════════════════════════════
 const UI = {
@@ -569,7 +578,8 @@ let state = {
   uploadTarget: null,
   histDetail: null,
   lang: "th",
-  saved: false
+  saved: false,
+  historyUnlocked: false
 };
 
 // ══════ CALC ══════
@@ -604,7 +614,6 @@ function render(){
 function switchView(v){
   state.view=v;
   if(v!=="history")state.histDetail=null;
-  if(v==="history" && SCRIPT_URL && state.records.length===0) loadRecords();
   render();window.scrollTo(0,0);
 }
 function updateNav(){
@@ -864,6 +873,20 @@ function recFb(r){
 }
 
 function renderHistory(){
+  // PIN Gate — must enter PIN to see history
+  if(!state.historyUnlocked){
+    return `
+      <div class="card" style="padding:30px 20px;text-align:center;max-width:400px;margin:40px auto">
+        <div style="font-size:60px;margin-bottom:12px">🔐</div>
+        <div style="font-size:18px;font-weight:800;color:var(--g1);margin-bottom:6px">${state.lang==="en"?"Restricted Area":"พื้นที่จำกัด"}</div>
+        <div style="font-size:13px;color:#6b7280;margin-bottom:20px">${state.lang==="en"?"Please enter PIN to view supervision history":"กรุณาใส่รหัส PIN เพื่อดูประวัติการนิเทศ"}</div>
+        <input type="password" id="pin-input" class="f-inp" placeholder="${state.lang==="en"?"Enter PIN":"ใส่รหัส PIN"}" style="text-align:center;font-size:18px;letter-spacing:2px;margin-bottom:12px" maxlength="30" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+        <button class="btn btn-primary" onclick="checkPin()">${state.lang==="en"?"🔓 Unlock":"🔓 ปลดล็อก"}</button>
+        <div id="pin-error" style="color:#dc2626;font-size:12px;margin-top:10px;min-height:18px"></div>
+        <div style="font-size:11px;color:#9ca3af;margin-top:16px;line-height:1.6">${state.lang==="en"?"💡 Forgot PIN? Contact administrator":"💡 ลืม PIN? ติดต่อผู้ดูแลระบบ"}</div>
+      </div>`;
+  }
+
   // Detail view
   if(state.histDetail){
     const r=state.histDetail;
@@ -922,7 +945,8 @@ function renderHistory(){
     });
     h+=`<button class="btn btn-danger" style="margin-top:8px;margin-bottom:16px" onclick="clearAllRecords()">${L("clearAll")}</button>`;
   }
-  if(SCRIPT_URL) h+=`<button class="btn btn-outline" style="margin-bottom:16px" onclick="loadRecords()">${L("reload")}</button>`;
+  if(SCRIPT_URL) h+=`<button class="btn btn-outline" style="margin-bottom:8px" onclick="loadRecords()">${L("reload")}</button>`;
+  h+=`<button class="btn btn-outline" style="margin-bottom:16px;border-color:#6b7280;color:#6b7280" onclick="lockHistory()">🔒 ${state.lang==="en"?"Lock History":"ล็อกประวัติ"}</button>`;
   return h;
 }
 
@@ -930,6 +954,32 @@ function viewRecord(idx){
   const r=state.records[idx];
   if(!r){toast(state.lang==="en"?"Record not found":"ไม่พบข้อมูล");return;}
   state.histDetail=r;render();window.scrollTo(0,0);
+}
+
+// ══════ PIN PROTECTION ══════
+function checkPin(){
+  const input=document.getElementById("pin-input");
+  const errBox=document.getElementById("pin-error");
+  if(!input)return;
+  const val=input.value.trim();
+  if(val===HISTORY_PIN || val===MASTER_PIN){
+    state.historyUnlocked=true;
+    sessionStorage.setItem("cvn-history-unlocked","1"); // remember for this session
+    if(SCRIPT_URL && state.records.length===0) loadRecords();
+    render();
+    toast(state.lang==="en"?"🔓 Unlocked":"🔓 ปลดล็อกสำเร็จ");
+  }else{
+    if(errBox) errBox.textContent=state.lang==="en"?"❌ Incorrect PIN. Please try again.":"❌ รหัส PIN ไม่ถูกต้อง กรุณาลองใหม่";
+    input.value="";input.focus();
+  }
+}
+
+function lockHistory(){
+  state.historyUnlocked=false;
+  state.histDetail=null;
+  sessionStorage.removeItem("cvn-history-unlocked");
+  switchView("form");
+  toast(state.lang==="en"?"🔒 History locked":"🔒 ล็อกประวัติแล้ว");
 }
 
 function deleteRecord(id){
@@ -1039,9 +1089,49 @@ function closePrintOverlay(){
 }
 
 // ══════ SAVE TO GOOGLE SHEETS ══════
+// Check for duplicate records (same teacher + date + period in last 24h)
+function checkDuplicate(){
+  const now=new Date();
+  const teacher=(state.info.teacher||"").trim().toLowerCase();
+  const date=state.info.date||"";
+  const period=state.info.period||"";
+  const visitNum=state.info.visitNum||"";
+
+  if(!teacher) return null;
+
+  const dups=state.records.filter(r=>{
+    const rTeacher=(r.teacher||"").trim().toLowerCase();
+    if(rTeacher!==teacher) return false;
+    if(date && r.date===date && period && String(r.period)===String(period)) return true;
+    if(visitNum && String(r.visitNum)===String(visitNum) && date && r.date===date) return true;
+    // Recent same teacher (within X hours)
+    if(r.timestamp){
+      const ts=new Date(r.timestamp);
+      const hoursDiff=(now-ts)/(1000*60*60);
+      if(hoursDiff<DUPLICATE_CHECK_HOURS && rTeacher===teacher && date===r.date) return true;
+    }
+    return false;
+  });
+  return dups.length>0 ? dups[0] : null;
+}
+
 async function saveToSheet(){
   if(!state.info.teacher||!state.info.supervisor){toast(L("teacher").includes("*")?"กรุณากรอกชื่อผู้รับการนิเทศและผู้นิเทศ":"Please fill in teacher and supervisor name");return}
   if(scoredCount()<10){toast("กรุณาประเมินอย่างน้อย 10 รายการ / Please score at least 10 items");return}
+
+  // Check for duplicates
+  const dup=checkDuplicate();
+  if(dup){
+    const dupDate=dup.timestamp?new Date(dup.timestamp).toLocaleString(state.lang==="en"?"en-US":"th-TH",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}):"";
+    const msg=state.lang==="en"
+      ? `⚠️ Possible duplicate found!\n\nTeacher: ${dup.teacher}\nDate: ${dup.date||"-"} | Period: ${dup.period||"-"} | Visit: ${dup.visitNum||"-"}\nSaved: ${dupDate}\n\nDo you still want to save a new record?`
+      : `⚠️ พบรายการนิเทศที่อาจซ้ำ!\n\nครู: ${dup.teacher}\nวันที่: ${dup.date||"-"} | คาบ: ${dup.period||"-"} | ครั้งที่: ${dup.visitNum||"-"}\nบันทึกเมื่อ: ${dupDate}\n\nต้องการบันทึกรายการใหม่หรือไม่?`;
+    if(!confirm(msg)){
+      toast(state.lang==="en"?"Save cancelled":"ยกเลิกการบันทึก");
+      return;
+    }
+  }
+
   if(!SCRIPT_URL){toast(L("noScript"));saveLocal();return}
 
   state.saving=true;render();
@@ -1175,10 +1265,20 @@ function bindEvents(){
   document.querySelectorAll("[data-fb]").forEach(el=>{
     el.addEventListener("input",e=>{state.fb[e.target.dataset.fb]=e.target.value});
   });
+  // PIN input: Enter key submits
+  const pinInput=document.getElementById("pin-input");
+  if(pinInput){
+    pinInput.addEventListener("keydown",e=>{if(e.key==="Enter")checkPin();});
+    pinInput.focus();
+  }
 }
 
 // ══════ INIT ══════
 function init(){
+  // Restore unlock state for this session
+  if(sessionStorage.getItem("cvn-history-unlocked")==="1"){
+    state.historyUnlocked=true;
+  }
   // Always load records first (local or remote)
   loadRecords();
   render();
