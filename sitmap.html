@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CVN SITMAP — แบบนิเทศการสอนประถมศึกษา</title>
+<style>
+:root {
+  --g1:#1a3a18; --g2:#2d5a27; --g3:#4a7c44; --gold:#c9a84c;
+  --bg:#fef9f3; --card:#fff; --border:#e5d9c5; --txt:#2d2416; --sub:#6b7280;
+  --S:#16a34a;  --S-bg:#dcfce7;   /* Student - Green */
+  --I:#eab308;  --I-bg:#fef3c7;   /* Innovation - Yellow */
+  --T:#2563eb;  --T-bg:#dbeafe;   /* Teacher - Blue */
+  --M:#ea580c;  --M-bg:#ffedd5;   /* Material - Orange */
+  --A:#9333ea;  --A-bg:#f3e8ff;   /* Atmosphere - Purple */
+  --r5:#15803d; --r4:#1d4ed8; --r3:#7c3aed; --r2:#c2410c; --r1:#dc2626;
+  --fs-base:16px; --fs-sm:14px; --fs-xs:12px; --fs-lg:18px; --fs-xl:22px;
+  --pad:16px; --radius:18px; --gap:12px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Sarabun','Noto Sans Thai',system-ui,sans-serif;background:linear-gradient(135deg,#fef9f3,#f0f7f0);color:var(--txt);min-height:100vh;font-size:var(--fs-base);line-height:1.6;-webkit-text-size-adjust:100%}
+
+/* ══════ HEADER ══════ */
+.header{background:linear-gradient(135deg,var(--g1),var(--g2),var(--g1));color:#fff;padding:var(--pad);position:sticky;top:0;z-index:50;box-shadow:0 4px 20px rgba(0,0,0,.3)}
+.header-inner{max-width:900px;margin:0 auto;display:flex;align-items:center;gap:14px}
+.header h1{font-size:var(--fs-xl);font-weight:800;letter-spacing:.5px;line-height:1.2}
+.header p{font-size:var(--fs-xs);color:#d4c98a;margin-top:2px;font-weight:600}
+.nav{display:flex;gap:4px;background:#0f260e;border-radius:14px;padding:4px;max-width:900px;margin:10px auto 0}
+.nav button{flex:1;padding:12px 8px;border:none;border-radius:11px;font-size:var(--fs-sm);font-weight:700;cursor:pointer;background:transparent;color:#8aa88a;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .25s;min-height:44px}
+.nav button.active{background:var(--gold);color:#1a3a18;box-shadow:0 2px 8px rgba(201,168,76,.4)}
+.lang-btn{background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.3);color:#fff;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .2s;font-family:inherit}
+.lang-btn:hover{background:rgba(255,255,255,.25)}
+
+.body{max-width:900px;margin:0 auto;padding:var(--pad) var(--gap) 120px}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:0 4px 16px rgba(0,0,0,.06);overflow:hidden;margin-bottom:var(--gap)}
+.card-head{padding:14px var(--pad);background:linear-gradient(135deg,var(--g1),var(--g2));color:#fff;font-weight:700;font-size:var(--fs-lg);display:flex;align-items:center;gap:8px}
+
+/* ══════ SITMAP HERO ══════ */
+.sitmap-hero{padding:18px 16px;background:linear-gradient(135deg,#fff,#fef9f3);border-radius:var(--radius);margin-bottom:14px;box-shadow:0 4px 16px rgba(0,0,0,.06)}
+.sitmap-letters{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:14px}
+.sitmap-letter{padding:14px 6px;border-radius:14px;text-align:center;cursor:pointer;transition:transform .2s;border:3px solid transparent;position:relative}
+.sitmap-letter:hover{transform:translateY(-3px)}
+.sitmap-letter.active{transform:translateY(-3px);box-shadow:0 6px 16px rgba(0,0,0,.15)}
+.sitmap-letter .big{font-size:34px;font-weight:900;line-height:1}
+.sitmap-letter .name{font-size:10px;font-weight:700;margin-top:4px;opacity:.85}
+.sitmap-letter .score{font-size:16px;font-weight:800;margin-top:3px}
+.sitmap-letter[data-d="S"]{background:var(--S-bg);color:var(--S);border-color:var(--S-bg)}
+.sitmap-letter[data-d="I"]{background:var(--I-bg);color:#a16207;border-color:var(--I-bg)}
+.sitmap-letter[data-d="T"]{background:var(--T-bg);color:var(--T);border-color:var(--T-bg)}
+.sitmap-letter[data-d="M"]{background:var(--M-bg);color:var(--M);border-color:var(--M-bg)}
+.sitmap-letter[data-d="A"]{background:var(--A-bg);color:var(--A);border-color:var(--A-bg)}
+.sitmap-letter[data-d="S"].active{border-color:var(--S)}
+.sitmap-letter[data-d="I"].active{border-color:var(--I)}
+.sitmap-letter[data-d="T"].active{border-color:var(--T)}
+.sitmap-letter[data-d="M"].active{border-color:var(--M)}
+.sitmap-letter[data-d="A"].active{border-color:var(--A)}
+.sitmap-letter .check{position:absolute;top:6px;right:6px;font-size:14px}
+
+/* ══════ FORM ELEMENTS ══════ */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap);padding:var(--pad)}
+.grid2 .full{grid-column:1/-1}
+label.f-label{font-size:var(--fs-xs);font-weight:700;color:#4a3e26;display:block;margin-bottom:4px}
+input.f-inp,select.f-inp,textarea.f-inp{width:100%;padding:12px 14px;border:2px solid var(--border);border-radius:12px;font-size:var(--fs-base);outline:none;box-sizing:border-box;font-family:inherit;background:#fff;transition:all .2s;min-height:48px}
+input.f-inp:focus,select.f-inp:focus,textarea.f-inp:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,.2)}
+textarea.f-inp{min-height:100px;resize:vertical}
+
+/* ══════ DOMAIN SECTION ══════ */
+.dom-card{background:#fff;border-radius:var(--radius);overflow:hidden;margin-bottom:14px;box-shadow:0 4px 16px rgba(0,0,0,.06)}
+.dom-head{display:flex;align-items:center;padding:18px var(--pad);gap:14px;cursor:pointer;transition:all .2s;color:#fff}
+.dom-head[data-d="S"]{background:linear-gradient(135deg,var(--S),#15803d)}
+.dom-head[data-d="I"]{background:linear-gradient(135deg,var(--I),#ca8a04)}
+.dom-head[data-d="T"]{background:linear-gradient(135deg,var(--T),#1d4ed8)}
+.dom-head[data-d="M"]{background:linear-gradient(135deg,var(--M),#c2410c)}
+.dom-head[data-d="A"]{background:linear-gradient(135deg,var(--A),#7c3aed)}
+.dom-letter-big{font-size:48px;font-weight:900;line-height:1;width:60px;text-align:center;text-shadow:2px 2px 4px rgba(0,0,0,.2)}
+.dom-info{flex:1}
+.dom-name{font-size:17px;font-weight:800;line-height:1.2}
+.dom-name-en{font-size:13px;font-weight:500;opacity:.9;margin-top:1px}
+.dom-meta{font-size:11px;opacity:.85;margin-top:4px;font-weight:600}
+.dom-score-big{text-align:right;flex-shrink:0}
+.dom-score-big .num{font-size:30px;font-weight:900;line-height:1}
+.dom-score-big .max{font-size:13px;opacity:.85;font-weight:600}
+
+.progress{height:8px;background:#e8efe8;overflow:hidden;margin:0}
+.progress-fill{height:100%;transition:width .4s ease}
+
+.ind-row{padding:16px var(--pad);border-bottom:1px solid #f3f0e8;transition:background .2s}
+.ind-row:last-child{border-bottom:none}
+.ind-row.has-score{background:linear-gradient(to right,#fafff5,#fff)}
+.ind-text{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px}
+.ind-num{font-size:14px;font-weight:800;color:#9ca3af;min-width:24px;flex-shrink:0;line-height:1.6}
+.ind-content{flex:1;font-size:15px;color:#1a2e1a;line-height:1.5}
+.rating{display:flex;gap:6px;padding-left:34px;align-items:center;flex-wrap:wrap}
+.r-btn{min-width:52px;height:48px;border:2px solid #d4d4d8;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:#fff;color:#9ca3af;font-size:20px;font-weight:800;line-height:1;transition:all .15s;-webkit-tap-highlight-color:transparent}
+.r-btn:hover{transform:scale(1.08)}
+.r-btn:active{transform:scale(.95)}
+.r-btn.sel{color:#fff;box-shadow:0 4px 12px rgba(0,0,0,.2)}
+.r-btn .r-lbl{font-size:8.5px;font-weight:600;margin-top:2px;letter-spacing:.2px}
+
+.badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:12px;font-size:var(--fs-xs);font-weight:700}
+
+/* ══════ PHOTO ══════ */
+.photo-bar{padding:12px var(--pad);border-top:2px dashed #e5d9c5;background:#fef9f3;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.photo-btn{padding:10px 18px;border:2px dashed var(--gold);border-radius:12px;background:#fff;color:#a16207;font-size:14px;font-weight:700;cursor:pointer;min-height:44px}
+.photo-thumb{width:52px;height:52px;object-fit:cover;border-radius:10px;border:2px solid #fbbf24}
+.photo-rm{position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;background:#dc2626;color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;font-weight:700}
+
+/* ══════ BUTTONS ══════ */
+.btn{padding:16px;border:none;border-radius:14px;font-size:var(--fs-base);font-weight:700;cursor:pointer;width:100%;transition:all .2s;font-family:inherit;min-height:52px;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-primary{background:linear-gradient(135deg,var(--g2),var(--g1));color:#fff;box-shadow:0 4px 12px rgba(45,90,39,.3)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(45,90,39,.4)}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#a16207);color:#fff;box-shadow:0 4px 12px rgba(201,168,76,.3)}
+.btn-outline{background:#fff;border:2px solid var(--g2);color:var(--g2)}
+.btn-danger{background:#fff;border:2px solid #dc2626;color:#dc2626}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-row{display:flex;gap:var(--gap);margin-bottom:var(--gap)}
+
+/* ══════ FLOATING BUTTON ══════ */
+.fab{position:fixed;bottom:20px;right:16px;background:linear-gradient(135deg,var(--gold),#a16207);color:#fff;border:none;border-radius:18px;padding:14px 24px;font-size:var(--fs-base);font-weight:800;cursor:pointer;box-shadow:0 6px 24px rgba(201,168,76,.5);z-index:50;display:flex;align-items:center;gap:8px;font-family:inherit;min-height:52px}
+
+/* ══════ TOAST ══════ */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--g1);color:#fff;padding:12px 24px;border-radius:14px;font-size:14px;font-weight:700;z-index:999;box-shadow:0 6px 20px rgba(0,0,0,.3);transition:opacity .3s;white-space:nowrap}
+.toast.hide{opacity:0;pointer-events:none}
+
+/* ══════ SUMMARY ══════ */
+.score-hero{text-align:center;padding:30px 16px;border-radius:var(--radius);position:relative;overflow:hidden}
+.score-hero .emoji{font-size:60px;line-height:1}
+.score-hero .total{font-size:56px;font-weight:900;line-height:1;margin-top:6px}
+.score-hero .quality{font-size:22px;font-weight:800;margin-top:8px}
+
+.radar-container{padding:20px;display:flex;justify-content:center;align-items:center;background:#fafff5}
+
+/* ══════ EXPORT / PRINT ══════ */
+.export-doc{background:#fff;border-radius:var(--radius);box-shadow:0 4px 16px rgba(0,0,0,.06);overflow:hidden;margin-bottom:var(--gap)}
+
+#print-overlay{position:fixed;inset:0;background:#fff;z-index:9999;overflow-y:auto;padding:12px;font-family:'Sarabun','Noto Sans Thai',sans-serif;-webkit-overflow-scrolling:touch}
+.print-controls{position:sticky;top:0;background:#fff;padding:8px 0 12px;display:flex;gap:10px;z-index:10;border-bottom:2px solid #e0e8e0;margin-bottom:12px}
+.print-hint{background:#fef9f3;border:2px solid var(--gold);border-radius:12px;padding:12px;margin-bottom:16px;font-size:13px;color:#4a3e26;line-height:1.7}
+.print-content{padding-bottom:40px}
+.print-content img{max-width:120px !important;height:90px !important;object-fit:cover;border-radius:6px}
+
+@media print {
+  body > *:not(#print-overlay) { display:none !important }
+  #print-overlay { position:static !important; padding:0 !important; overflow:visible !important }
+  .print-controls, .print-hint { display:none !important }
+  .print-content { padding:0 !important }
+  body { background:#fff !important; padding:0 !important; margin:0 !important; font-size:12px !important; overflow:visible !important }
+  .export-doc { box-shadow:none !important; border-radius:0 !important; margin:0 !important; border:none !important }
+  .export-doc * { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; color-adjust:exact !important }
+  @page { size:A4; margin:10mm }
+}
+
+.spinner{display:inline-block;width:20px;height:20px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.status-bar{padding:10px var(--pad);background:#fff3cd;color:#856404;font-size:var(--fs-sm);text-align:center;display:none}
+.status-bar.connected{background:#d4edda;color:#155724}
+.status-bar.error{background:#f8d7da;color:#721c24}
+
+/* ══════ RESPONSIVE ══════ */
+@media (min-width:768px) {
+  :root{--fs-base:18px;--fs-sm:15px;--fs-xs:13px;--fs-lg:20px;--fs-xl:26px;--pad:20px;--gap:16px}
+  .header{padding:18px 24px}
+  .header svg{width:54px;height:54px}
+  .nav button{padding:14px 12px;font-size:16px}
+  .r-btn{min-width:62px;height:54px;font-size:24px}
+  .r-btn .r-lbl{font-size:10px}
+  .btn{padding:18px;font-size:18px;min-height:56px}
+  .fab{padding:16px 28px;font-size:18px;bottom:24px;right:24px}
+  .photo-thumb{width:64px;height:64px}
+  .sitmap-letter .big{font-size:42px}
+  .sitmap-letter .name{font-size:12px}
+  .sitmap-letter .score{font-size:18px}
+  .dom-letter-big{font-size:56px;width:70px}
+  .dom-name{font-size:19px}
+  .dom-score-big .num{font-size:36px}
+  .ind-content{font-size:17px}
+  .ind-num{font-size:16px;min-width:30px}
+  input.f-inp,select.f-inp,textarea.f-inp{padding:14px 16px;font-size:18px;min-height:54px}
+}
+
+@media (min-width:1024px) {
+  :root{--fs-base:19px;--fs-sm:16px;--fs-xs:14px;--fs-lg:22px;--fs-xl:30px}
+  .body{max-width:980px}
+  .header-inner,.nav{max-width:980px}
+  .sitmap-letter .big{font-size:48px}
+  .dom-letter-big{font-size:64px;width:78px}
+}
+
+@media (max-width:380px) {
+  :root{--fs-base:15px;--fs-sm:13px;--pad:12px;--gap:10px}
+  .header h1{font-size:18px}
+  .grid2{grid-template-columns:1fr}
+  .r-btn{min-width:46px;height:42px;font-size:18px}
+  .rating{gap:5px;padding-left:24px}
+  .sitmap-letter .big{font-size:28px}
+  .sitmap-letter .name{font-size:9px}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════ HEADER ══════ -->
+<div class="header">
+  <div class="header-inner">
+    <svg width="46" height="46" viewBox="0 0 120 120"><defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2d5a27"/><stop offset="100%" stop-color="#1a3a18"/></linearGradient></defs><path d="M60 8 L108 28 Q112 30 112 34 L112 60 Q112 90 60 114 Q8 90 8 60 L8 34 Q8 30 12 28 Z" fill="url(#sg)" stroke="#c9a84c" stroke-width="4"/><text x="60" y="68" text-anchor="middle" font-family="Georgia,serif" font-size="36" font-weight="bold" fill="white" letter-spacing="3">CVN</text><path d="M42 30 L60 22 L78 30" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"/><path d="M40 82 Q50 78 60 82 Q70 78 80 82" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"/></svg>
+    <div style="flex:1"><h1 id="h-title">โรงเรียนจารุวัฒนานุกูล</h1><p id="h-sub">📋 SITMAP — แบบนิเทศประถมศึกษา</p></div>
+    <button class="lang-btn" onclick="toggleLang()" id="lang-btn">🇬🇧 EN</button>
+    <button class="lang-btn" onclick="lockSystem()" id="lock-btn" title="Lock System" style="padding:6px 12px">🔒</button>
+  </div>
+  <div class="nav" id="nav">
+    <button class="active" onclick="switchView('form')">📝 ฟอร์ม</button>
+    <button onclick="switchView('summary')">📊 สรุปผล</button>
+    <button onclick="switchView('history')" id="nav-history">📚 ประวัติ(0)</button>
+  </div>
+</div>
+<div id="status-bar" class="status-bar"></div>
+
+<div class="body" id="app"></div>
+
+<button class="fab" id="fab" style="display:none" onclick="switchView('summary')"></button>
+<div class="toast hide" id="toast"></div>
+<input type="file" id="file-input" accept="image/*" capture="environment" style="display:none">
+
+<script>
+// ══════════════════════════════════════════════════════════════
+//  CONFIGURATION
+// ══════════════════════════════════════════════════════════════
+const SCRIPT_URL = "";  // ← วาง URL ของ Apps Script (สำหรับ SITMAP ใหม่)
+const SHEET_URL  = "";  // ← วาง URL ของ Google Sheets
+
+const HISTORY_PIN = "cvn4167070tc";
+const MASTER_PIN  = "CVN-Admin-2518";
+const ACCESS_PIN  = "cvn4167070tc";
+const DUPLICATE_CHECK_HOURS = 24;
+
+// ══════════════════════════════════════════════════════════════
+//  SITMAP DATA (20 ข้อ / 5 ด้าน / 100 คะแนน)
+// ══════════════════════════════════════════════════════════════
+const EVAL = [
+{
+  id:"S", letter:"S", name:"นักเรียน", nameEn:"Student",
+  desc:"การมีส่วนร่วมของผู้เรียน", descEn:"Student Engagement",
+  icon:"👦", w:20, color:"S",
+  inds:[
+    {id:"S.1", t:"นักเรียนมีส่วนร่วมในกิจกรรมที่พัฒนาด้านร่างกาย", en:"Students participate in physical development activities"},
+    {id:"S.2", t:"นักเรียนมีส่วนร่วมในกิจกรรมที่พัฒนาด้านอารมณ์-จิตใจ", en:"Students participate in emotional-mental development activities"},
+    {id:"S.3", t:"นักเรียนมีส่วนร่วมในกิจกรรมที่พัฒนาด้านสังคม", en:"Students participate in social development activities"},
+    {id:"S.4", t:"นักเรียนมีส่วนร่วมในกิจกรรมที่พัฒนาด้านสติปัญญา", en:"Students participate in intellectual development activities"},
+  ]
+},
+{
+  id:"I", letter:"I", name:"การจัดการเรียนการสอน / นวัตกรรม", nameEn:"Instruction / Innovation",
+  desc:"รูปแบบและนวัตกรรมการสอน", descEn:"Teaching Methods & Innovation",
+  icon:"💡", w:10, color:"I",
+  inds:[
+    {id:"I.1", t:"รูปแบบการจัดการเรียนรู้เชิงรุก Active Learning / Activity-based Learning", en:"Active Learning / Activity-based Learning approach"},
+    {id:"I.2", t:"กิจกรรมการเรียนรู้เชื่อมโยงกับชีวิตจริง รวมถึงสอดแทรกคุณธรรมจริยธรรม", en:"Learning activities connect with real life and integrate ethics"},
+  ]
+},
+{
+  id:"T", letter:"T", name:"ครู", nameEn:"Teacher",
+  desc:"คุณภาพและบุคลิกภาพของครู", descEn:"Teacher Quality & Personality",
+  icon:"👩‍🏫", w:45, color:"T",
+  inds:[
+    {id:"T.1", t:"ครูมีบุคลิกภาพที่ดี คล่องแคล่ว ว่องไว มั่นใจในตนเอง", en:"Teacher has good personality, agile, and confident"},
+    {id:"T.2", t:"หน้าตายิ้มแย้ม แจ่มใส สร้างบรรยากาศในการเรียนได้ดี", en:"Cheerful demeanor creates good learning atmosphere"},
+    {id:"T.3", t:"การใช้ภาษา (ถูกหลักภาษา / ใช้คำที่ถูกต้อง / ใช้ภาษาที่เหมาะสมกับวัย)", en:"Language use (grammar, correct words, age-appropriate)"},
+    {id:"T.4", t:"น้ำเสียง (น่าฟัง / จังหวะหนัก-เบา / จังหวะการพูดดี / ออกเสียงชัดเจน)", en:"Voice quality (pleasant, rhythm, clear pronunciation)"},
+    {id:"T.5", t:"การใช้สร้อยเสริมบท (ค่ะ / ครับ / ขา ฯลฯ)", en:"Use of polite particles appropriately"},
+    {id:"T.6", t:"มีการเสริมแรงโดยใช้คำพูดเชิงบวก (ชมเชย / ให้กำลังใจ / ตักเตือนเด็ก)", en:"Positive reinforcement (praise, encouragement, gentle correction)"},
+    {id:"T.7", t:"ครูเคลื่อนไหวรอบห้อง และเอาใจใส่ดูแลเด็กอย่างทั่วถึง", en:"Teacher moves around and attends to all students"},
+    {id:"T.8", t:"ครูมีเทคนิคการเก็บเด็ก / แก้ปัญหา / ให้คำแนะนำเด็กเมื่อทำผิดพลาดได้", en:"Effective classroom management and student guidance"},
+    {id:"T.9", t:"ครูเปิดโอกาสให้เด็กทุกคนได้เข้าร่วมกิจกรรมไม่เจาะจงเป็นรายบุคคล", en:"All students get equal opportunity to participate"},
+  ]
+},
+{
+  id:"M", letter:"M", name:"สื่อการเรียนการสอน", nameEn:"Material",
+  desc:"สื่อและแหล่งการเรียนรู้", descEn:"Teaching Materials & Resources",
+  icon:"📚", w:15, color:"M",
+  inds:[
+    {id:"M.1", t:"มีสื่อการเรียนการสอนที่สอดคล้องกับจุดประสงค์เหมาะสมกับวัย", en:"Materials align with objectives and age-appropriate"},
+    {id:"M.2", t:"มีสื่อการเรียนการสอนที่เพียงพอกับจำนวนเด็ก", en:"Sufficient materials for all students"},
+    {id:"M.3", t:"มีสื่อการเรียนการสอนที่น่าสนใจและหลากหลาย", en:"Interesting and diverse teaching materials"},
+  ]
+},
+{
+  id:"A", letter:"A", name:"บรรยากาศและสภาพแวดล้อม", nameEn:"Atmosphere",
+  desc:"สภาพแวดล้อมในการเรียนรู้", descEn:"Learning Environment",
+  icon:"🏫", w:10, color:"A",
+  inds:[
+    {id:"A.1", t:"จัดสภาพห้องเรียนเหมาะสมกับการจัดกิจกรรม", en:"Classroom arrangement suits the activities"},
+    {id:"A.2", t:"มีพื้นที่ในการจัดป้ายนิเทศ / สื่อ / อุปกรณ์ที่สอดคล้องกับหน่วยการเรียนรู้", en:"Display board / materials align with learning unit"},
+  ]
+}
+];
+
+const ALL_IND = EVAL.flatMap(d => d.inds);
+const QLVL = [
+  {mn:90, l:"ยอดเยี่ยม", c:"#15803d", bg:"#dcfce7", e:"🏆", k:"r5"},
+  {mn:80, l:"ดีเลิศ",    c:"#1d4ed8", bg:"#dbeafe", e:"🌟", k:"r4"},
+  {mn:70, l:"ดี",        c:"#7c3aed", bg:"#ede9fe", e:"👍", k:"r3"},
+  {mn:60, l:"ปานกลาง",  c:"#c2410c", bg:"#ffedd5", e:"📝", k:"r2"},
+  {mn:0,  l:"กำลังพัฒนา",c:"#dc2626", bg:"#fef2f2", e:"🌱", k:"r1"}
+];
+const getQ = p => QLVL.find(l => p >= l.mn) || QLVL[4];
+const SC = {5:"#15803d", 4:"#1d4ed8", 3:"#7c3aed", 2:"#c2410c", 1:"#dc2626"};
+const SL_TH = {5:"ดีเยี่ยม", 4:"ดี", 3:"พอใช้", 2:"ควรปรับปรุง", 1:"ไม่ผ่าน"};
+const SL_EN = {5:"Excellent", 4:"Good", 3:"Fair", 2:"Improve", 1:"Fail"};
+function SL(v){return state.lang==="en"?SL_EN[v]:SL_TH[v]}
+
+// ══════════════════════════════════════════════════════════════
+//  BILINGUAL UI
+// ══════════════════════════════════════════════════════════════
+const UI = {
+th:{
+  schoolName:"โรงเรียนจารุวัฒนานุกูล", schoolSub:"📋 SITMAP — แบบนิเทศประถมศึกษา",
+  navForm:"📝 ฟอร์ม", navSummary:"📊 สรุปผล", navHistory:"📚 ประวัติ",
+  generalInfo:"📋 ข้อมูลทั่วไป", teacher:"ชื่อครูผู้สอน *", visitNum:"ครั้งที่นิเทศ",
+  semester:"ภาคเรียน", year:"ปีการศึกษา", classLevel:"ชั้น", unit:"หน่วยการเรียนรู้",
+  date:"วันที่สอน", supervisor:"ผู้นิเทศ *",
+  scored:"ประเมินแล้ว", points:"คะแนน",
+  feedback:"💬 ข้อเสนอแนะ",
+  point:"🎯 ประเด็นที่น่าสนใจ (Point)",
+  comment:"💡 ข้อเสนอแนะของผู้นิเทศ",
+  pointP:"ระบุประเด็นที่น่าสนใจในการสอน...",
+  commentP:"ระบุข้อเสนอแนะเพื่อพัฒนา...",
+  save:"💾 บันทึกผลการนิเทศ", saving:"กำลังบันทึก...",
+  export:"📄 Export สรุปผลการนิเทศ", reset:"🔄 เริ่มนิเทศรายการใหม่",
+  copy:"📋 คัดลอกข้อความ", pdf:"📥 บันทึก PDF",
+  back:"← กลับ", score100:"คะแนน (เต็ม 100)", qualityLevel:"ระดับคุณภาพ",
+  domainBreakdown:"📊 คะแนนรายด้าน SITMAP",
+  attachPhoto:"📷 แนบรูปหลักฐาน", photoEvidence:"📷 ภาพหลักฐาน", photoN:"ภาพ",
+  history:"📚 ประวัติการนิเทศ", historyN:"รายการ", noHistory:"ยังไม่มีประวัติ",
+  deleteThis:"🗑️ ลบรายการนี้", clearAll:"🗑️ ล้างประวัติทั้งหมด", reload:"🔄 โหลดข้อมูลใหม่",
+  confirmDelete:"ต้องการลบรายการนี้?", confirmClear:"ต้องการล้างประวัติทั้งหมด?",
+  exportTitle:"สรุปผลการนิเทศการสอน SITMAP",
+  r5:"ยอดเยี่ยม", r4:"ดีเลิศ", r3:"ดี", r2:"ปานกลาง", r1:"กำลังพัฒนา",
+  name:"ชื่อ-สกุล", dateLabel:"วันที่", classLabel:"ชั้น",
+  unitLabel:"หน่วยการเรียนรู้", supervisorLabel:"ผู้นิเทศ", visitLabel:"ครั้งที่", semesterLabel:"ภาคเรียน",
+  createdAt:"สร้างเมื่อ", selectN:"— เลือก —"
+},
+en:{
+  schoolName:"Charuvatananukul School", schoolSub:"📋 SITMAP — Elementary Supervision Form",
+  navForm:"📝 Form", navSummary:"📊 Summary", navHistory:"📚 History",
+  generalInfo:"📋 General Information", teacher:"Teacher Name *", visitNum:"Visit No.",
+  semester:"Semester", year:"Academic Year", classLevel:"Class", unit:"Learning Unit",
+  date:"Teaching Date", supervisor:"Supervisor *",
+  scored:"Scored", points:"points",
+  feedback:"💬 Feedback",
+  point:"🎯 Points of Interest",
+  comment:"💡 Supervisor's Suggestions",
+  pointP:"Describe interesting points...",
+  commentP:"Provide suggestions for development...",
+  save:"💾 Save Evaluation", saving:"Saving...",
+  export:"📄 Export Summary", reset:"🔄 New Evaluation",
+  copy:"📋 Copy Text", pdf:"📥 Save PDF",
+  back:"← Back", score100:"Score (out of 100)", qualityLevel:"Quality Level",
+  domainBreakdown:"📊 SITMAP Domain Scores",
+  attachPhoto:"📷 Attach Photo", photoEvidence:"📷 Photo Evidence", photoN:"photos",
+  history:"📚 Supervision History", historyN:"records", noHistory:"No records yet",
+  deleteThis:"🗑️ Delete this record", clearAll:"🗑️ Clear all", reload:"🔄 Reload",
+  confirmDelete:"Delete this record?", confirmClear:"Clear all history?",
+  exportTitle:"SITMAP Supervision Summary",
+  r5:"Excellent", r4:"Very Good", r3:"Good", r2:"Fair", r1:"Needs Improvement",
+  name:"Name", dateLabel:"Date", classLabel:"Class",
+  unitLabel:"Unit", supervisorLabel:"Supervisor", visitLabel:"Visit", semesterLabel:"Semester",
+  createdAt:"Created", selectN:"— Select —"
+}};
+
+function L(key){return UI[state.lang]?.[key]||UI.th[key]||key}
+function QL(q){return L(q.k)}
+function TD(d){return state.lang==="en"?d.nameEn:d.name}
+function TDesc(d){return state.lang==="en"?d.descEn:d.desc}
+function TI(i){return state.lang==="en"?i.en:i.t}
+
+const CLASS_LEVELS = [
+  "อนุบาล 1", "อนุบาล 2", "อนุบาล 3",
+  "ประถมศึกษาปีที่ 1", "ประถมศึกษาปีที่ 2", "ประถมศึกษาปีที่ 3",
+  "ประถมศึกษาปีที่ 4", "ประถมศึกษาปีที่ 5", "ประถมศึกษาปีที่ 6"
+];
+const CLASS_EN = {
+  "อนุบาล 1":"Kindergarten 1", "อนุบาล 2":"Kindergarten 2", "อนุบาล 3":"Kindergarten 3",
+  "ประถมศึกษาปีที่ 1":"Grade 1", "ประถมศึกษาปีที่ 2":"Grade 2", "ประถมศึกษาปีที่ 3":"Grade 3",
+  "ประถมศึกษาปีที่ 4":"Grade 4", "ประถมศึกษาปีที่ 5":"Grade 5", "ประถมศึกษาปีที่ 6":"Grade 6"
+};
+function dispClass(v){if(!v)return"-";return state.lang==="en"?(CLASS_EN[v]||v):v}
+
+// HTML escape
+function esc(s){
+  if(s==null) return "";
+  return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+function toggleLang(){
+  state.lang = state.lang==="th"?"en":"th";
+  document.documentElement.lang = state.lang;
+  document.getElementById("lang-btn").innerHTML = state.lang==="th"?"🇬🇧 EN":"🇹🇭 TH";
+  document.getElementById("h-title").textContent = L("schoolName");
+  document.getElementById("h-sub").textContent = L("schoolSub");
+  render();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════════════
+let state = {
+  view: "form",
+  scores: {},
+  info: {teacher:"", classLevel:"", unit:"", date:"", supervisor:"", visitNum:"", semester:"", year:""},
+  fb: {point:"", comment:""},
+  photos: {},
+  expDom: {"S":true},
+  records: [],
+  saving: false,
+  uploadTarget: null,
+  histDetail: null,
+  lang: "th",
+  saved: false,
+  historyUnlocked: false,
+  systemUnlocked: false
+};
+
+// ══════════════════════════════════════════════════════════════
+//  CALCULATIONS
+// ══════════════════════════════════════════════════════════════
+function calcDom(dId, sc){
+  const d = EVAL.find(x => x.id === dId);
+  const ids = d.inds.map(i => i.id);
+  const raw = ids.reduce((a, id) => a + (sc[id] || 0), 0);
+  const mx = ids.length * 5;
+  const scored = ids.filter(id => sc[id]).length;
+  return {raw, mx, scored, total: ids.length, wt: mx > 0 ? (raw/mx) * d.w : 0, w: d.w};
+}
+function calcAll(sc){return EVAL.reduce((a, d) => a + calcDom(d.id, sc).wt, 0)}
+function scoredCount(){return Object.keys(state.scores).length}
+
+function toast(msg){
+  const el = document.getElementById("toast");
+  el.textContent = msg; el.classList.remove("hide");
+  clearTimeout(el._t); el._t = setTimeout(() => el.classList.add("hide"), 2500);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════════════════════════════
+function render(){
+  const app = document.getElementById("app");
+  const lockBtn = document.getElementById("lock-btn");
+  const navEl = document.getElementById("nav");
+
+  // System Lock Gate
+  if(!state.systemUnlocked){
+    if(lockBtn) lockBtn.style.display = "none";
+    if(navEl) navEl.style.display = "none";
+    app.innerHTML = renderSystemLock();
+    bindEvents();
+    return;
+  }
+  if(lockBtn) lockBtn.style.display = "";
+  if(navEl) navEl.style.display = "";
+
+  if(state.view === "form") app.innerHTML = renderForm();
+  else if(state.view === "summary") app.innerHTML = renderSummary();
+  else if(state.view === "export") app.innerHTML = renderExport();
+  else if(state.view === "history") app.innerHTML = renderHistory();
+  updateNav(); updateFab(); bindEvents();
+}
+
+function renderSystemLock(){
+  return `
+    <div class="card" style="padding:40px 24px;text-align:center;max-width:440px;margin:40px auto;background:linear-gradient(135deg,#fff,#fef9f3)">
+      <div style="font-size:80px;margin-bottom:16px">🔐</div>
+      <div style="font-size:22px;font-weight:800;color:var(--g1);margin-bottom:8px">${state.lang==="en"?"System Locked":"ระบบล็อก"}</div>
+      <div style="font-size:14px;color:#6b7280;margin-bottom:24px;line-height:1.6">${state.lang==="en"?"SITMAP Supervision System<br>Please enter access PIN":"ระบบนิเทศการสอน SITMAP<br>กรุณาใส่รหัสเข้าใช้งาน"}</div>
+      <input type="password" id="system-pin-input" class="f-inp" placeholder="${state.lang==="en"?"Enter PIN":"ใส่รหัส PIN"}" style="text-align:center;font-size:18px;letter-spacing:2px;margin-bottom:14px" maxlength="30" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+      <button class="btn btn-primary" onclick="checkSystemPin()">${state.lang==="en"?"🔓 Enter System":"🔓 เข้าสู่ระบบ"}</button>
+      <div id="system-pin-error" style="color:#dc2626;font-size:13px;margin-top:12px;min-height:20px;font-weight:600"></div>
+      <div style="font-size:11px;color:#9ca3af;margin-top:20px;line-height:1.7;padding-top:16px;border-top:1px solid #e0e8e0">${state.lang==="en"?"💡 Forgot PIN? Contact administrator":"💡 ลืม PIN? ติดต่อผู้ดูแลระบบ"}</div>
+    </div>
+    <div style="text-align:center;margin-top:20px">
+      <button class="lang-btn" onclick="toggleLang()" style="background:var(--g2);border-color:var(--g2)">${state.lang==="th"?"🇬🇧 EN":"🇹🇭 TH"}</button>
+    </div>`;
+}
+
+function switchView(v){
+  state.view = v;
+  if(v !== "history") state.histDetail = null;
+  render(); window.scrollTo(0, 0);
+}
+
+function updateNav(){
+  const btns = document.querySelectorAll(".nav button");
+  const views = ["form", "summary", "history"];
+  const labels = [L("navForm"), L("navSummary"), L("navHistory")+"("+state.records.length+")"];
+  btns.forEach((b, i) => {
+    b.classList.toggle("active", state.view === views[i] || (state.view === "export" && i === 1));
+    b.textContent = labels[i];
+  });
+}
+
+function updateFab(){
+  const fab = document.getElementById("fab");
+  const n = scoredCount();
+  if(state.view === "form" && n > 0){
+    const tw = calcAll(state.scores); const q = getQ(tw);
+    fab.style.display = "flex";
+    fab.innerHTML = `${q.e} ${tw.toFixed(1)}/100 → ${L("navSummary").replace("📊 ","")}`;
+  } else {
+    fab.style.display = "none";
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  FORM VIEW
+// ══════════════════════════════════════════════════════════════
+function renderForm(){
+  const info = state.info;
+  const sl = state.lang;
+  let h = "";
+
+  // SITMAP Hero
+  h += `<div class="sitmap-hero">
+    <div style="text-align:center">
+      <div style="font-size:22px;font-weight:900;color:var(--g1)">🌟 SITMAP</div>
+      <div style="font-size:12px;color:#6b7280;font-weight:600;margin-top:2px">${sl==="en"?"5 dimensions • 20 items • 100 points":"5 ด้าน • 20 ข้อ • 100 คะแนน"}</div>
+    </div>
+    <div class="sitmap-letters">`;
+  EVAL.forEach(d => {
+    const dc = calcDom(d.id, state.scores);
+    const done = dc.scored === d.inds.length;
+    const isActive = state.expDom[d.id];
+    h += `<div class="sitmap-letter ${isActive?'active':''}" data-d="${d.id}" onclick="toggleDom('${d.id}')">
+      <div class="big">${d.letter}</div>
+      <div class="name">${sl==="en"?d.nameEn:d.name}</div>
+      <div class="score">${dc.wt.toFixed(0)}/${d.w}</div>
+      ${done?'<div class="check">✅</div>':''}
+    </div>`;
+  });
+  h += `</div></div>`;
+
+  // General Info
+  h += `<div class="card"><div class="card-head">${L("generalInfo")}</div><div class="grid2">`;
+  h += `<div class="full"><label class="f-label">${L("teacher")}</label><input class="f-inp" data-info="teacher" value="${esc(info.teacher)}" placeholder="${L("teacher").replace(' *','')}"></div>`;
+  h += `<div><label class="f-label">${L("classLevel")}</label><select class="f-inp" data-info="classLevel"><option value="">${L("selectN")}</option>`;
+  CLASS_LEVELS.forEach(c => {
+    const lbl = sl==="en"?(CLASS_EN[c]||c):c;
+    h += `<option value="${c}" ${info.classLevel===c?"selected":""}>${lbl}</option>`;
+  });
+  h += `</select></div>`;
+  h += `<div><label class="f-label">${L("visitNum")}</label><select class="f-inp" data-info="visitNum"><option value="">${L("selectN")}</option>${[1,2,3,4,5,6].map(n=>`<option value="${n}" ${info.visitNum==n?"selected":""}>${sl==="en"?"Visit ":"ครั้งที่ "}${n}</option>`).join("")}</select></div>`;
+  h += `<div class="full"><label class="f-label">${L("unit")}</label><input class="f-inp" data-info="unit" value="${esc(info.unit)}" placeholder="${L("unit")}"></div>`;
+
+  // Date (3 dropdowns)
+  const dateParts = (info.date||"").split("-");
+  const dateY = dateParts[0]||"", dateM = dateParts[1]||"", dateD = dateParts[2]||"";
+  const MONTHS_TH = ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
+  const MONTHS_EN = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const MONTHS = sl==="en"?MONTHS_EN:MONTHS_TH;
+  const dayOpts = Array.from({length:31},(_,i)=>i+1).map(d=>`<option value="${String(d).padStart(2,'0')}" ${dateD===String(d).padStart(2,'0')?"selected":""}>${d}</option>`).join("");
+  const monOpts = MONTHS.map((m,i)=>{const v=String(i+1).padStart(2,'0');return `<option value="${v}" ${dateM===v?"selected":""}>${m}</option>`;}).join("");
+  const curY = new Date().getFullYear(); const startY = sl==="en"?curY:curY+543;
+  const yearOpts = Array.from({length:5},(_,i)=>startY-i).map(y=>`<option value="${sl==="en"?y:y-543}" ${dateY===(sl==="en"?String(y):String(y-543))?"selected":""}>${y}</option>`).join("");
+
+  h += `<div class="full"><label class="f-label">${L("date")}</label>
+    <div style="display:flex;gap:6px">
+      <select class="f-inp" id="date-d" style="flex:1" onchange="updateDate()"><option value="">${sl==="en"?"Day":"วัน"}</option>${dayOpts}</select>
+      <select class="f-inp" id="date-m" style="flex:2" onchange="updateDate()"><option value="">${sl==="en"?"Month":"เดือน"}</option>${monOpts}</select>
+      <select class="f-inp" id="date-y" style="flex:1.5" onchange="updateDate()"><option value="">${sl==="en"?"Year":"ปี"}</option>${yearOpts}</select>
+    </div>
+  </div>`;
+
+  h += `<div><label class="f-label">${L("supervisor")}</label><input class="f-inp" data-info="supervisor" value="${esc(info.supervisor)}"></div>`;
+  h += `<div><label class="f-label">${L("semester")}</label><select class="f-inp" data-info="semester"><option value="">${L("selectN")}</option><option value="1" ${info.semester==="1"?"selected":""}>1</option><option value="2" ${info.semester==="2"?"selected":""}>2</option></select></div>`;
+  h += `<div><label class="f-label">${L("year")}</label><input class="f-inp" data-info="year" value="${esc(info.year)}" placeholder="2569"></div>`;
+  h += `</div></div>`;
+
+  // Stats line
+  h += `<div class="card" style="padding:12px 16px;display:flex;gap:12px;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#fffbf0,#fff)">
+    <div style="font-size:13px;font-weight:600;color:#4a3e26">${L("scored")} <b style="color:var(--gold)">${scoredCount()}/${ALL_IND.length}</b></div>
+    <div style="font-size:18px;font-weight:900;color:var(--g1)">${calcAll(state.scores).toFixed(1)}/100</div>
+  </div>`;
+
+  // Domains
+  EVAL.forEach(d => {
+    const dc = calcDom(d.id, state.scores);
+    const on = state.expDom[d.id];
+    const dp = dc.w > 0 ? (dc.wt/dc.w*100) : 0;
+
+    h += `<div class="dom-card">`;
+    h += `<div class="dom-head" data-d="${d.id}" onclick="toggleDom('${d.id}')">
+      <div class="dom-letter-big">${d.letter}</div>
+      <div class="dom-info">
+        <div class="dom-name">${d.icon} ${TD(d)}</div>
+        <div class="dom-name-en">${TDesc(d)}</div>
+        <div class="dom-meta">${d.inds.length} ${sl==="en"?"items":"ข้อ"} • ${d.w} ${L("points")}</div>
+      </div>
+      <div class="dom-score-big">
+        <div class="num">${dc.wt.toFixed(1)}</div>
+        <div class="max">/${d.w}</div>
+      </div>
+      <span style="font-size:18px;transition:transform .3s;transform:rotate(${on?180:0}deg)">▼</span>
+    </div>`;
+
+    h += `<div class="progress"><div class="progress-fill" style="width:${dp}%;background:var(--${d.color})"></div></div>`;
+
+    if(on){
+      d.inds.forEach((ind, idx) => {
+        const v = state.scores[ind.id];
+        h += `<div class="ind-row ${v?'has-score':''}">
+          <div class="ind-text">
+            <span class="ind-num">${ind.id}</span>
+            <span class="ind-content">${TI(ind)}</span>
+          </div>
+          <div class="rating">`;
+        [5,4,3,2,1].forEach(val => {
+          const sel = v === val;
+          h += `<div class="r-btn ${sel?'sel':''}" style="${sel?`border-color:${SC[val]};background:${SC[val]}`:""}" onclick="setScore('${ind.id}',${val})">${val}<span class="r-lbl">${SL(val)}</span></div>`;
+        });
+        if(v) h += `<span style="margin-left:6px;font-size:13px;color:${SC[v]};font-weight:700">✓</span>`;
+        h += `</div></div>`;
+      });
+
+      // Photos per domain
+      const photos = state.photos[d.id] || [];
+      h += `<div class="photo-bar"><button class="photo-btn" onclick="uploadPhoto('${d.id}')">${L("attachPhoto")}</button>`;
+      photos.forEach((p, i) => {
+        h += `<div style="position:relative"><img src="${p.data}" class="photo-thumb"><button class="photo-rm" onclick="removePhoto('${d.id}',${i})">✕</button></div>`;
+      });
+      h += `</div>`;
+    }
+    h += `</div>`;
+  });
+
+  // Feedback
+  h += `<div class="card"><div class="card-head">${L("feedback")}</div><div style="padding:16px;display:flex;flex-direction:column;gap:14px">
+    <div><label style="font-size:14px;font-weight:700;color:#1d4ed8;margin-bottom:6px;display:block">${L("point")}</label><textarea class="f-inp" data-fb="point" placeholder="${L("pointP")}">${esc(state.fb.point)}</textarea></div>
+    <div><label style="font-size:14px;font-weight:700;color:#c2410c;margin-bottom:6px;display:block">${L("comment")}</label><textarea class="f-inp" data-fb="comment" placeholder="${L("commentP")}">${esc(state.fb.comment)}</textarea></div>
+  </div></div>`;
+
+  return h;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SUMMARY VIEW
+// ══════════════════════════════════════════════════════════════
+function renderSummary(){
+  const tw = calcAll(state.scores); const q = getQ(tw);
+  let h = `<div class="card score-hero" style="background:linear-gradient(135deg,${q.bg},#fff)">
+    <div class="emoji">${q.e}</div>
+    <div class="total" style="color:${q.c}">${tw.toFixed(1)}</div>
+    <div style="font-size:13px;color:#6b7280;margin-top:2px">${L("score100")}</div>
+    <div class="quality" style="color:${q.c}">${QL(q)}</div>
+    ${state.info.teacher?`<div style="font-size:14px;color:#4a3e26;margin-top:14px"><b>${esc(state.info.teacher)}</b> | ${L("supervisorLabel")}: <b>${esc(state.info.supervisor)}</b></div>`:""}
+  </div>`;
+
+  // SITMAP Radar (SVG)
+  h += `<div class="card"><div class="card-head">📊 SITMAP Radar</div>
+    <div class="radar-container">${renderRadar()}</div>
+  </div>`;
+
+  // Domain breakdown
+  h += `<div class="card"><div style="padding:14px 16px;border-bottom:1px solid #e8efe8;font-weight:700;font-size:16px;color:var(--g1)">${L("domainBreakdown")}</div>`;
+  EVAL.forEach(d => {
+    const dc = calcDom(d.id, state.scores);
+    const dp = dc.w > 0 ? (dc.wt/dc.w*100) : 0;
+    const dq = getQ(dp);
+    h += `<div style="padding:14px 16px;border-bottom:1px solid #f0f5f0">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+        <div style="width:42px;height:42px;border-radius:10px;background:var(--${d.color}-bg);color:var(--${d.color});display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;flex-shrink:0">${d.letter}</div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:700;color:var(--g1)">${TD(d)}</div>
+          <div style="font-size:11px;color:#9ca3af">${d.inds.length} ${state.lang==="en"?"items":"ข้อ"}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:18px;font-weight:900;color:${dq.c}">${dc.wt.toFixed(1)}/${d.w}</div>
+          <span class="badge" style="background:${dq.bg};color:${dq.c}">${QL(dq)}</span>
+        </div>
+      </div>
+      <div class="progress"><div class="progress-fill" style="width:${dp}%;background:var(--${d.color})"></div></div>
+    </div>`;
+  });
+  h += `</div>`;
+
+  // Feedback
+  if(state.fb.point || state.fb.comment){
+    h += `<div class="card"><div style="padding:14px 16px;border-bottom:1px solid #e8efe8;font-weight:700;font-size:16px;color:var(--g1)">${L("feedback")}</div>`;
+    if(state.fb.point) h += `<div style="padding:12px 16px;border-bottom:1px solid #f0f5f0"><div style="font-size:13px;font-weight:700;color:#1d4ed8;margin-bottom:4px">${L("point")}</div><div style="font-size:14px;line-height:1.6">${esc(state.fb.point)}</div></div>`;
+    if(state.fb.comment) h += `<div style="padding:12px 16px"><div style="font-size:13px;font-weight:700;color:#c2410c;margin-bottom:4px">${L("comment")}</div><div style="font-size:14px;line-height:1.6">${esc(state.fb.comment)}</div></div>`;
+    h += `</div>`;
+  }
+
+  // Photos
+  const allP = EVAL.flatMap(d => (state.photos[d.id]||[]).map(p => p.data));
+  if(allP.length > 0){
+    h += `<div class="card"><div style="padding:14px 16px;border-bottom:1px solid #e8efe8;font-weight:700;font-size:16px;color:var(--g1)">${L("photoEvidence")} (${allP.length} ${L("photoN")})</div><div style="padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px">`;
+    allP.forEach(src => h += `<img src="${src}" style="width:100%;height:90px;object-fit:cover;border-radius:8px;border:2px solid #fbbf24">`);
+    h += `</div></div>`;
+  }
+
+  // Buttons
+  h += `<div class="btn-row">
+    <button class="btn ${state.saved?"":"btn-primary"}" onclick="saveToSheet()" ${state.saving||state.saved?"disabled":""} style="${state.saved?"background:#d1d5db;color:#6b7280;border:none":""};flex:3">${state.saved?"✅ "+(state.lang==="en"?"Saved":"บันทึกแล้ว"):state.saving?'<span class="spinner"></span> '+L("saving"):L("save")}</button>
+    ${SHEET_URL?`<button class="btn btn-outline" onclick="window.open('${SHEET_URL}','_blank')" title="Open Sheets" style="flex:1;min-width:52px;padding:14px 10px">📊</button>`:""}
+  </div>
+  ${state.saved&&SHEET_URL?`<div style="text-align:center;margin-bottom:8px"><button onclick="window.open('${SHEET_URL}','_blank')" style="background:none;border:none;color:var(--g2);font-size:13px;font-weight:600;cursor:pointer;text-decoration:underline;font-family:inherit">📊 ${state.lang==="en"?"View in Google Sheets →":"ตรวจสอบข้อมูลใน Google Sheets →"}</button></div>`:""}`;
+  h += `<button class="btn btn-gold" style="margin-bottom:8px" onclick="switchView('export')">${L("export")}</button>`;
+  h += `<button class="btn btn-danger" style="margin-bottom:16px" onclick="resetForm()">${L("reset")}</button>`;
+  if(!SCRIPT_URL) h += `<div style="padding:12px;background:#fff3cd;border-radius:8px;font-size:12px;color:#856404;text-align:center">⚠️ ยังไม่ได้เชื่อมต่อ Google Sheets</div>`;
+  return h;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  RADAR CHART (SVG)
+// ══════════════════════════════════════════════════════════════
+function renderRadar(){
+  const cx = 150, cy = 150, R = 110;
+  const labels = EVAL.map(d => d.letter);
+  const colors = EVAL.map(d => `var(--${d.color})`);
+  const n = labels.length;
+
+  // Calculate points
+  const values = EVAL.map(d => {
+    const dc = calcDom(d.id, state.scores);
+    return dc.w > 0 ? (dc.wt/dc.w) : 0; // 0-1
+  });
+
+  const angle = i => (Math.PI*2*i)/n - Math.PI/2;
+  const pt = (i, r) => `${cx + Math.cos(angle(i))*r},${cy + Math.sin(angle(i))*r}`;
+
+  // Grid (5 levels)
+  let grid = "";
+  [.2,.4,.6,.8,1].forEach(level => {
+    const points = Array.from({length:n}, (_,i) => pt(i, R*level)).join(" ");
+    grid += `<polygon points="${points}" fill="none" stroke="#e5d9c5" stroke-width="1"/>`;
+  });
+
+  // Axes
+  let axes = "";
+  for(let i = 0; i < n; i++){
+    axes += `<line x1="${cx}" y1="${cy}" x2="${cx+Math.cos(angle(i))*R}" y2="${cy+Math.sin(angle(i))*R}" stroke="#e5d9c5" stroke-width="1"/>`;
+  }
+
+  // Data polygon
+  const dataPoints = Array.from({length:n}, (_,i) => pt(i, R*values[i])).join(" ");
+  const dataPolygon = `<polygon points="${dataPoints}" fill="rgba(201,168,76,.3)" stroke="#c9a84c" stroke-width="2.5"/>`;
+
+  // Data dots
+  let dots = "";
+  for(let i = 0; i < n; i++){
+    const [x, y] = pt(i, R*values[i]).split(",");
+    dots += `<circle cx="${x}" cy="${y}" r="5" fill="${colors[i]}" stroke="#fff" stroke-width="2"/>`;
+  }
+
+  // Labels (outside)
+  let labelsHtml = "";
+  for(let i = 0; i < n; i++){
+    const [x, y] = pt(i, R+22).split(",");
+    labelsHtml += `<text x="${x}" y="${y}" text-anchor="middle" dominant-baseline="middle" font-size="20" font-weight="900" fill="${colors[i]}">${labels[i]}</text>`;
+  }
+
+  return `<svg viewBox="0 0 300 300" width="100%" style="max-width:320px;height:auto">
+    ${grid}${axes}${dataPolygon}${dots}${labelsHtml}
+  </svg>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  EXPORT VIEW
+// ══════════════════════════════════════════════════════════════
+function renderExport(){
+  const sc = state.scores; const inf = state.info; const fb = state.fb;
+  const tw = calcAll(sc); const q = getQ(tw);
+
+  let h = `<button class="btn btn-outline no-print" style="width:auto;padding:8px 14px;margin-bottom:10px;font-size:13px" onclick="switchView('summary')">${L("back")}</button>`;
+  h += `<div class="export-doc" id="print-area">`;
+
+  // Header
+  h += `<div style="background:linear-gradient(135deg,var(--g1),var(--g2));color:#fff;padding:20px 16px;text-align:center"><div style="font-size:20px;font-weight:800">${L("exportTitle")}</div><div style="font-size:13px;opacity:.85;margin-top:2px">${L("schoolName")} | SITMAP Framework</div></div>`;
+
+  // Info
+  h += `<div style="padding:14px 16px;border-bottom:2px solid #e8efe8"><div style="font-size:15px;font-weight:700;color:var(--g1);margin-bottom:10px">📋 ${state.lang==="en"?"Teacher Information":"ข้อมูลผู้รับการนิเทศ"}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;font-size:13px">
+    <div><span style="color:#6b7280">${L("name")}:</span> <b>${esc(inf.teacher||"-")}</b></div><div><span style="color:#6b7280">${L("classLabel")}:</span> ${dispClass(inf.classLevel)}</div>
+    <div><span style="color:#6b7280">${L("unitLabel")}:</span> ${esc(inf.unit||"-")}</div><div><span style="color:#6b7280">${L("dateLabel")}:</span> ${esc(inf.date||"-")}</div>
+    <div><span style="color:#6b7280">${L("supervisorLabel")}:</span> <b>${esc(inf.supervisor||"-")}</b></div><div><span style="color:#6b7280">${L("visitLabel")}:</span> ${esc(inf.visitNum||"-")}</div>
+    <div><span style="color:#6b7280">${L("semesterLabel")}:</span> ${esc(inf.semester||"-")} / ${esc(inf.year||"-")}</div>
+  </div></div>`;
+
+  // Score Hero
+  h += `<div style="text-align:center;padding:22px 16px;background:${q.bg};border-bottom:2px solid #e8efe8"><div style="font-size:42px">${q.e}</div><div style="font-size:50px;font-weight:900;color:${q.c}">${tw.toFixed(1)}<span style="font-size:20px;font-weight:400">/100</span></div><div style="font-size:18px;font-weight:800;color:${q.c}">${L("qualityLevel")}: ${QL(q)}</div></div>`;
+
+  // Domain breakdown
+  h += `<div style="padding:14px 16px"><div style="font-size:15px;font-weight:700;color:var(--g1);margin-bottom:12px">${L("domainBreakdown")}</div>`;
+  EVAL.forEach(d => {
+    const dc = calcDom(d.id, sc);
+    const dp = d.w > 0 ? (dc.wt/d.w*100) : 0;
+    const dq = getQ(dp);
+    h += `<div style="margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+        <div style="width:34px;height:34px;border-radius:8px;background:var(--${d.color}-bg);color:var(--${d.color});display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900">${d.letter}</div>
+        <div style="flex:1"><div style="font-size:14px;font-weight:700">${TD(d)}</div><div style="font-size:11px;color:#9ca3af">${TDesc(d)}</div></div>
+        <span style="font-size:16px;font-weight:800;color:${dq.c}">${dc.wt.toFixed(1)}/${d.w}</span>
+      </div>
+      <div style="height:8px;border-radius:4px;background:#e8efe8;margin-bottom:6px"><div style="height:100%;border-radius:4px;background:${dq.c};width:${dp}%"></div></div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;padding-left:44px">`;
+    d.inds.forEach(i => {
+      const v = sc[i.id];
+      h += `<span style="font-size:11px;padding:2px 7px;border-radius:5px;border:1px solid ${v?SC[v]:"#d4d4d8"};color:${v?SC[v]:"#9ca3af"};font-weight:700">${i.id}:${v||"-"}/5</span>`;
+    });
+    h += `</div></div>`;
+  });
+  h += `</div>`;
+
+  // Feedback
+  if(fb.point || fb.comment){
+    h += `<div style="padding:14px 16px;border-top:2px solid #e8efe8"><div style="font-size:15px;font-weight:700;color:var(--g1);margin-bottom:10px">${L("feedback")}</div>`;
+    if(fb.point) h += `<div style="margin-bottom:10px"><div style="font-size:13px;font-weight:700;color:#1d4ed8;margin-bottom:3px">${L("point")}</div><div style="font-size:13px;line-height:1.6;padding:8px 12px;background:#dbeafe;border-radius:8px;border-left:3px solid #1d4ed8">${esc(fb.point)}</div></div>`;
+    if(fb.comment) h += `<div><div style="font-size:13px;font-weight:700;color:#c2410c;margin-bottom:3px">${L("comment")}</div><div style="font-size:13px;line-height:1.6;padding:8px 12px;background:#ffedd5;border-radius:8px;border-left:3px solid #c2410c">${esc(fb.comment)}</div></div>`;
+    h += `</div>`;
+  }
+
+  // Photos
+  const allP = EVAL.flatMap(d => (state.photos[d.id]||[]).map(p => p.data));
+  if(allP.length > 0){
+    h += `<div style="padding:14px 16px;border-top:2px solid #e8efe8"><div style="font-size:15px;font-weight:700;color:var(--g1);margin-bottom:10px">${L("photoEvidence")} (${allP.length} ${L("photoN")})</div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px">`;
+    allP.forEach(src => h += `<img src="${src}" style="width:100%;height:95px;object-fit:cover;border-radius:8px;border:2px solid #fbbf24">`);
+    h += `</div></div>`;
+  }
+
+  h += `<div style="padding:10px 16px;background:#fef9f3;font-size:11px;color:#9ca3af;text-align:center">${L("createdAt")} ${new Date().toLocaleDateString(state.lang==="en"?"en-US":"th-TH",{day:"numeric",month:"long",year:"numeric",hour:"2-digit",minute:"2-digit"})} | CVN SITMAP System</div>`;
+  h += `</div>`;
+
+  h += `<div class="btn-row no-print" style="margin-top:12px"><button class="btn btn-primary" onclick="doCopy()">${L("copy")}</button></div>`;
+  h += `<button class="btn btn-gold no-print" style="margin-bottom:16px" onclick="doPrint()">${L("pdf")}</button>`;
+
+  return h;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  HISTORY VIEW
+// ══════════════════════════════════════════════════════════════
+function recScores(r){
+  if(r.scores && typeof r.scores==="object") return r.scores;
+  const out = {};
+  Object.keys(r).forEach(k => {
+    if(k.startsWith("score_")){
+      const id = k.replace("score_","");
+      const v = parseInt(r[k]);
+      if(!isNaN(v) && v>=1 && v<=5) out[id] = v;
+    }
+  });
+  return out;
+}
+function recFb(r){
+  if(r.fb && typeof r.fb==="object") return r.fb;
+  return {point: r.feedback_point||"", comment: r.feedback_comment||""};
+}
+
+function renderHistory(){
+  // PIN Gate
+  if(!state.historyUnlocked){
+    return `
+      <div class="card" style="padding:30px 20px;text-align:center;max-width:400px;margin:40px auto">
+        <div style="font-size:60px;margin-bottom:12px">🔐</div>
+        <div style="font-size:18px;font-weight:800;color:var(--g1);margin-bottom:6px">${state.lang==="en"?"Restricted Area":"พื้นที่จำกัด"}</div>
+        <div style="font-size:13px;color:#6b7280;margin-bottom:20px">${state.lang==="en"?"Please enter PIN to view supervision history":"กรุณาใส่รหัส PIN เพื่อดูประวัติการนิเทศ"}</div>
+        <input type="password" id="pin-input" class="f-inp" placeholder="${state.lang==="en"?"Enter PIN":"ใส่รหัส PIN"}" style="text-align:center;font-size:18px;letter-spacing:2px;margin-bottom:12px" maxlength="30" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+        <button class="btn btn-primary" onclick="checkPin()">${state.lang==="en"?"🔓 Unlock":"🔓 ปลดล็อก"}</button>
+        <div id="pin-error" style="color:#dc2626;font-size:12px;margin-top:10px;min-height:18px"></div>
+      </div>`;
+  }
+
+  // Detail view
+  if(state.histDetail){
+    const r = state.histDetail;
+    const tw = parseFloat(r.total_weighted) || 0;
+    const rq = getQ(tw);
+    const rsc = recScores(r);
+    const rfb = recFb(r);
+
+    let h = `<button class="btn btn-outline" style="width:auto;padding:8px 14px;margin-bottom:10px;font-size:13px" onclick="state.histDetail=null;render()">${L("back")}</button>`;
+    h += `<div class="card score-hero" style="background:linear-gradient(135deg,${rq.bg},#fff)">
+      <div class="emoji">${rq.e}</div>
+      <div class="total" style="color:${rq.c}">${tw.toFixed(1)}/100</div>
+      <div class="quality" style="color:${rq.c}">${QL(rq)}</div>
+      <div style="font-size:14px;color:#4a3e26;margin-top:12px"><b>${esc(r.teacher||"-")}</b></div>
+      <div style="font-size:12px;color:#9ca3af">${dispClass(r.classLevel)} | ${L("supervisorLabel")}: ${esc(r.supervisor||"-")}</div>
+      <div style="font-size:11px;color:#9ca3af;margin-top:4px">${r.timestamp?new Date(r.timestamp).toLocaleDateString(state.lang==="en"?"en-US":"th-TH",{day:"numeric",month:"long",year:"numeric"}):""}</div>
+    </div>`;
+
+    h += `<div class="card"><div style="padding:14px 16px;font-weight:700;font-size:16px;color:var(--g1);border-bottom:1px solid #e8efe8">${L("domainBreakdown")}</div>`;
+    EVAL.forEach(d => {
+      const dc = calcDom(d.id, rsc);
+      const dp = d.w > 0 ? (dc.wt/d.w*100) : 0;
+      const dq = getQ(dp);
+      h += `<div style="padding:14px 16px;border-bottom:1px solid #f0f5f0">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <div style="width:36px;height:36px;border-radius:8px;background:var(--${d.color}-bg);color:var(--${d.color});display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900">${d.letter}</div>
+          <div style="flex:1;font-size:14px;font-weight:700">${TD(d)}</div>
+          <div style="font-size:15px;font-weight:800;color:${dq.c}">${dc.wt.toFixed(1)}/${d.w}</div>
+        </div>
+        <div class="progress"><div class="progress-fill" style="width:${dp}%;background:var(--${d.color})"></div></div>
+        <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:8px;padding-left:46px">`;
+      d.inds.forEach(i => {
+        const v = rsc[i.id];
+        h += `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:${v?getQ(v*20).bg:"#f3f4f6"};color:${v?getQ(v*20).c:"#9ca3af"};font-weight:700">${i.id}:${v||"-"}</span>`;
+      });
+      h += `</div></div>`;
+    });
+    h += `</div>`;
+
+    if(rfb.point || rfb.comment){
+      h += `<div class="card"><div style="padding:14px 16px;font-weight:700;font-size:16px;color:var(--g1);border-bottom:1px solid #e8efe8">${L("feedback")}</div>`;
+      if(rfb.point) h += `<div style="padding:10px 16px;border-bottom:1px solid #f0f5f0"><div style="font-size:12px;font-weight:700;color:#1d4ed8;margin-bottom:3px">${L("point")}</div><div style="font-size:13px;line-height:1.6">${esc(rfb.point)}</div></div>`;
+      if(rfb.comment) h += `<div style="padding:10px 16px"><div style="font-size:12px;font-weight:700;color:#c2410c;margin-bottom:3px">${L("comment")}</div><div style="font-size:13px;line-height:1.6">${esc(rfb.comment)}</div></div>`;
+      h += `</div>`;
+    }
+
+    if(r.id) h += `<button class="btn btn-danger" style="margin-bottom:16px" onclick="deleteRecord(${r.id})">${L("deleteThis")}</button>`;
+    return h;
+  }
+
+  // List view
+  let h = `<div class="card" style="padding:16px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--g1)">${L("history")}</div><div style="font-size:13px;color:#6b7280">${state.records.length} ${L("historyN")}</div></div>`;
+  if(state.records.length === 0){
+    h += `<div class="card" style="padding:40px 20px;text-align:center"><div style="font-size:48px;margin-bottom:8px">📝</div><div style="font-size:14px;color:#6b7280">${L("noHistory")}</div></div>`;
+  } else {
+    state.records.forEach((r, idx) => {
+      const tw = parseFloat(r.total_weighted) || 0;
+      const rq = getQ(tw);
+      h += `<div class="card" style="cursor:pointer" onclick="viewRecord(${idx})"><div style="padding:14px 16px;display:flex;align-items:center;gap:12px"><div style="width:50px;height:50px;border-radius:12px;background:${rq.bg};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px">${rq.e}</div><div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:700;color:var(--g1)">${esc(r.teacher||"-")}</div><div style="font-size:11px;color:#6b7280">${dispClass(r.classLevel)} | ${L("visitLabel")} ${r.visitNum||"-"}</div><div style="font-size:10px;color:#9ca3af">${r.timestamp?new Date(r.timestamp).toLocaleDateString(state.lang==="en"?"en-US":"th-TH",{day:"numeric",month:"short",year:"numeric"}):""}</div></div><div style="text-align:right;flex-shrink:0"><div style="font-size:20px;font-weight:900;color:${rq.c}">${tw.toFixed(0)}</div><span class="badge" style="background:${rq.bg};color:${rq.c}">${QL(rq)}</span></div></div></div>`;
+    });
+    h += `<button class="btn btn-danger" style="margin-top:8px;margin-bottom:8px" onclick="clearAllRecords()">${L("clearAll")}</button>`;
+  }
+  if(SCRIPT_URL) h += `<button class="btn btn-outline" style="margin-bottom:8px" onclick="loadRecords()">${L("reload")}</button>`;
+  h += `<button class="btn btn-outline" style="margin-bottom:16px;border-color:#6b7280;color:#6b7280" onclick="lockHistory()">🔒 ${state.lang==="en"?"Lock History":"ล็อกประวัติ"}</button>`;
+  return h;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  ACTIONS
+// ══════════════════════════════════════════════════════════════
+function setScore(id, val){
+  const v = parseInt(val);
+  if(isNaN(v) || v<1 || v>5) return;
+  state.scores[id] = v;
+  render();
+}
+function toggleDom(id){state.expDom[id] = !state.expDom[id]; render()}
+function uploadPhoto(did){state.uploadTarget = did; document.getElementById("file-input").click()}
+function removePhoto(did, idx){state.photos[did].splice(idx, 1); render()}
+
+function updateDate(){
+  const d = document.getElementById("date-d")?.value || "";
+  const m = document.getElementById("date-m")?.value || "";
+  const y = document.getElementById("date-y")?.value || "";
+  if(d && m && y) state.info.date = `${y}-${m}-${d}`;
+  else state.info.date = "";
+  updateFab();
+}
+
+document.getElementById("file-input").addEventListener("change", function(e){
+  const f = e.target.files?.[0]; if(!f || !state.uploadTarget) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    if(!state.photos[state.uploadTarget]) state.photos[state.uploadTarget] = [];
+    state.photos[state.uploadTarget].push({name: f.name, data: ev.target.result});
+    toast(state.lang==="en"?"Photo uploaded":"อัปโหลดสำเร็จ"); render();
+  };
+  r.readAsDataURL(f); e.target.value = "";
+});
+
+function resetForm(){
+  state.scores = {}; state.photos = {}; state.fb = {point:"", comment:""};
+  state.info = {teacher:"", classLevel:"", unit:"", date:"", supervisor:"", visitNum:"", semester:"", year:""};
+  state.expDom = {"S":true}; state.saved = false;
+  switchView("form");
+  toast(state.lang==="en"?"Form cleared":"ล้างฟอร์มเรียบร้อย");
+}
+
+function viewRecord(idx){
+  const r = state.records[idx];
+  if(!r){toast(state.lang==="en"?"Record not found":"ไม่พบข้อมูล"); return;}
+  state.histDetail = r; render(); window.scrollTo(0, 0);
+}
+
+function deleteRecord(id){
+  if(!confirm(L("confirmDelete"))) return;
+  state.records = state.records.filter(r => r.id !== id);
+  localStorage.setItem("cvn-sitmap-local", JSON.stringify(state.records));
+  state.histDetail = null; render();
+  toast(state.lang==="en"?"Deleted":"ลบเรียบร้อย");
+}
+
+function clearAllRecords(){
+  if(!confirm(L("confirmClear"))) return;
+  state.records = []; localStorage.removeItem("cvn-sitmap-local");
+  render(); toast(state.lang==="en"?"Cleared":"ล้างเรียบร้อย");
+}
+
+// ══════════════════════════════════════════════════════════════
+//  PIN PROTECTION
+// ══════════════════════════════════════════════════════════════
+function checkSystemPin(){
+  const input = document.getElementById("system-pin-input");
+  const errBox = document.getElementById("system-pin-error");
+  if(!input) return;
+  const val = input.value.trim();
+  if(val === ACCESS_PIN || val === HISTORY_PIN || val === MASTER_PIN){
+    state.systemUnlocked = true;
+    sessionStorage.setItem("cvn-sitmap-system-unlocked", "1");
+    if(val === HISTORY_PIN || val === MASTER_PIN){
+      state.historyUnlocked = true;
+      sessionStorage.setItem("cvn-sitmap-history-unlocked", "1");
+    }
+    render();
+    toast(state.lang==="en"?"🔓 Welcome":"🔓 ยินดีต้อนรับ");
+  } else {
+    if(errBox) errBox.textContent = state.lang==="en"?"❌ Incorrect PIN":"❌ รหัส PIN ไม่ถูกต้อง";
+    input.value = ""; input.focus();
+  }
+}
+
+function checkPin(){
+  const input = document.getElementById("pin-input");
+  const errBox = document.getElementById("pin-error");
+  if(!input) return;
+  const val = input.value.trim();
+  if(val === HISTORY_PIN || val === MASTER_PIN){
+    state.historyUnlocked = true;
+    sessionStorage.setItem("cvn-sitmap-history-unlocked", "1");
+    if(SCRIPT_URL && state.records.length === 0) loadRecords();
+    render();
+    toast(state.lang==="en"?"🔓 Unlocked":"🔓 ปลดล็อกสำเร็จ");
+  } else {
+    if(errBox) errBox.textContent = state.lang==="en"?"❌ Incorrect PIN":"❌ รหัส PIN ไม่ถูกต้อง";
+    input.value = ""; input.focus();
+  }
+}
+
+function lockHistory(){
+  state.historyUnlocked = false;
+  state.histDetail = null;
+  sessionStorage.removeItem("cvn-sitmap-history-unlocked");
+  switchView("form");
+  toast(state.lang==="en"?"🔒 History locked":"🔒 ล็อกประวัติแล้ว");
+}
+
+function lockSystem(){
+  state.systemUnlocked = false;
+  state.historyUnlocked = false;
+  state.histDetail = null;
+  sessionStorage.removeItem("cvn-sitmap-system-unlocked");
+  sessionStorage.removeItem("cvn-sitmap-history-unlocked");
+  render();
+  toast(state.lang==="en"?"🔒 System locked":"🔒 ล็อกระบบแล้ว");
+}
+
+// ══════════════════════════════════════════════════════════════
+//  COPY / PRINT
+// ══════════════════════════════════════════════════════════════
+function doCopy(){
+  const sc = state.scores; const inf = state.info; const fb = state.fb;
+  const tw = calcAll(sc); const q = getQ(tw);
+  let t = `═══ ${L("exportTitle")} ═══\n${L("schoolName")} | SITMAP\n\n`;
+  t += `👤 ${L("name")}: ${inf.teacher||"-"}\n🎓 ${L("classLabel")}: ${dispClass(inf.classLevel)}\n📚 ${L("unitLabel")}: ${inf.unit||"-"}\n📅 ${L("dateLabel")}: ${inf.date||"-"}\n👨‍🏫 ${L("supervisorLabel")}: ${inf.supervisor||"-"} | ${L("visitLabel")}: ${inf.visitNum||"-"}\n📆 ${L("semesterLabel")} ${inf.semester||"-"}/${inf.year||"-"}\n\n`;
+  t += `══ ${L("score100")}: ${tw.toFixed(1)}/100 (${QL(q)}) ══\n\n`;
+  EVAL.forEach(d => {
+    const dc = calcDom(d.id, sc);
+    t += `[${d.letter}] ${TD(d)}: ${dc.wt.toFixed(1)}/${d.w}\n`;
+    d.inds.forEach(i => t += `  ${i.id}: ${TI(i)} → ${sc[i.id]||"-"}/5\n`);
+    t += `\n`;
+  });
+  if(fb.point) t += `🎯 ${L("point")}:\n${fb.point}\n\n`;
+  if(fb.comment) t += `💡 ${L("comment")}:\n${fb.comment}\n`;
+
+  const ta = document.createElement("textarea");
+  ta.value = t; ta.style.cssText = "position:fixed;left:-9999px";
+  document.body.appendChild(ta); ta.select();
+  try {document.execCommand("copy"); toast(state.lang==="en"?"Copied!":"คัดลอกสำเร็จ!");}
+  catch(e) {prompt("Copy:", t);}
+  document.body.removeChild(ta);
+}
+
+function doPrint(){
+  const el = document.getElementById("print-area");
+  if(!el){toast("Summary not found"); return;}
+
+  let overlay = document.getElementById("print-overlay");
+  if(overlay) overlay.remove();
+
+  overlay = document.createElement("div");
+  overlay.id = "print-overlay";
+  overlay.innerHTML = `
+    <div class="print-controls">
+      <button onclick="closePrintOverlay()" style="flex:1;padding:14px;background:#f3f4f6;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">✕ ${state.lang==="en"?"Close":"ปิด"}</button>
+      <button onclick="window.print()" style="flex:2;padding:14px;background:#c9a84c;color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">🖨️ Print / Save PDF</button>
+    </div>
+    <div class="print-hint">
+      <b>💡 ${state.lang==="en"?"How to Save as PDF":"วิธีบันทึกเป็น PDF"}:</b><br>
+      <b>${state.lang==="en"?"Desktop":"คอม"}:</b> ${state.lang==="en"?"Click Print → Save as PDF":"กด Print → เลือก 'Save as PDF'"}<br>
+      <b>iPhone:</b> ${state.lang==="en"?"Share (□↑) → Print → Share → Save to Files":"กด Share (□↑) → Print → Share → Save to Files"}<br>
+      <b>Android:</b> ${state.lang==="en"?"Menu (⋮) → Share → Print → Save as PDF":"เมนู (⋮) → Share → Print → Save as PDF"}
+    </div>
+    <div class="print-content">${el.outerHTML}</div>
+  `;
+  document.body.appendChild(overlay);
+  document.body.style.overflow = "hidden";
+  window.scrollTo(0, 0);
+}
+function closePrintOverlay(){
+  const o = document.getElementById("print-overlay");
+  if(o) o.remove();
+  document.body.style.overflow = "";
+}
+
+// ══════════════════════════════════════════════════════════════
+//  SAVE / LOAD
+// ══════════════════════════════════════════════════════════════
+function checkDuplicate(){
+  const now = new Date();
+  const teacher = (state.info.teacher||"").trim().toLowerCase();
+  const date = state.info.date || "";
+  const visitNum = state.info.visitNum || "";
+  if(!teacher) return null;
+
+  return state.records.find(r => {
+    const rTeacher = (r.teacher||"").trim().toLowerCase();
+    if(rTeacher !== teacher) return false;
+    if(date && r.date === date && visitNum && String(r.visitNum) === String(visitNum)) return true;
+    if(r.timestamp){
+      const ts = new Date(r.timestamp);
+      const hoursDiff = (now - ts) / (1000*60*60);
+      if(hoursDiff < DUPLICATE_CHECK_HOURS && date === r.date) return true;
+    }
+    return false;
+  });
+}
+
+async function saveToSheet(){
+  if(!state.info.teacher || !state.info.supervisor){
+    toast(state.lang==="en"?"Please fill teacher and supervisor":"กรุณากรอกชื่อครูและผู้นิเทศ"); return;
+  }
+  if(scoredCount() < 10){
+    toast(state.lang==="en"?"Score at least 10 items":"กรุณาประเมินอย่างน้อย 10 ข้อ"); return;
+  }
+
+  const dup = checkDuplicate();
+  if(dup){
+    const dupDate = dup.timestamp ? new Date(dup.timestamp).toLocaleString(state.lang==="en"?"en-US":"th-TH",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}) : "";
+    const msg = state.lang==="en"
+      ? `⚠️ Possible duplicate!\n\n${dup.teacher} | Visit ${dup.visitNum||"-"}\nSaved: ${dupDate}\n\nSave new record anyway?`
+      : `⚠️ พบรายการนิเทศที่อาจซ้ำ!\n\n${dup.teacher} | ครั้งที่ ${dup.visitNum||"-"}\nบันทึกเมื่อ: ${dupDate}\n\nต้องการบันทึกใหม่หรือไม่?`;
+    if(!confirm(msg)){toast(state.lang==="en"?"Cancelled":"ยกเลิก"); return;}
+  }
+
+  if(!SCRIPT_URL){
+    toast(state.lang==="en"?"Saved locally":"บันทึก Local แทน");
+    saveLocal(); return;
+  }
+
+  state.saving = true; render();
+  const tw = calcAll(state.scores); const q = getQ(tw);
+  const body = {info: state.info, scores: state.scores, feedback: state.fb, photos: [], totalWeighted: tw.toFixed(1), quality: QL(q), framework: "SITMAP"};
+  const jsonStr = JSON.stringify(body);
+
+  let success = false;
+  try {
+    await fetch(SCRIPT_URL, {method:"POST", mode:"no-cors", headers:{"Content-Type":"text/plain"}, body: jsonStr});
+    await new Promise(r => setTimeout(r, 2000));
+    try {
+      const check = await fetch(SCRIPT_URL+"?action=list");
+      const checkData = await check.json();
+      if(checkData.success){success = true; state.records = checkData.records;}
+    } catch(e){}
+  } catch(e){}
+
+  if(!success){
+    try {
+      await new Promise(resolve => {
+        const iframe = document.createElement("iframe");
+        iframe.name = "cvn_save_"+Date.now();
+        iframe.style.cssText = "position:fixed;left:-9999px;width:1px;height:1px";
+        document.body.appendChild(iframe);
+        const form = document.createElement("form");
+        form.method = "POST"; form.action = SCRIPT_URL; form.target = iframe.name;
+        const input = document.createElement("input");
+        input.type = "hidden"; input.name = "payload"; input.value = jsonStr;
+        form.appendChild(input); document.body.appendChild(form);
+        iframe.onload = () => {setTimeout(() => {try{document.body.removeChild(iframe)}catch(e){}try{document.body.removeChild(form)}catch(e){}resolve();}, 1000);};
+        form.submit();
+        setTimeout(resolve, 5000);
+      });
+      success = true;
+    } catch(e){}
+  }
+
+  if(success){
+    toast("✅ "+(state.lang==="en"?"Saved!":"บันทึกสำเร็จ!"));
+    state.saved = true; saveLocal(); loadRecords();
+  } else {
+    toast(state.lang==="en"?"Saved locally":"บันทึก Local แทน"); saveLocal();
+  }
+  state.saving = false; render();
+}
+
+function saveLocal(){
+  const tw = calcAll(state.scores); const q = getQ(tw);
+  const rec = {
+    id: Date.now(), timestamp: new Date().toISOString(),
+    teacher: state.info.teacher, classLevel: state.info.classLevel,
+    unit: state.info.unit, date: state.info.date,
+    supervisor: state.info.supervisor, visitNum: state.info.visitNum,
+    semester: state.info.semester, year: state.info.year,
+    total_weighted: tw.toFixed(1), quality: q.l,
+    scores: {...state.scores}, fb: {...state.fb}
+  };
+  let local = JSON.parse(localStorage.getItem("cvn-sitmap-local") || "[]");
+  local.unshift(rec);
+  localStorage.setItem("cvn-sitmap-local", JSON.stringify(local.slice(0, 200)));
+  state.records = local; state.saved = true;
+  toast("💾 "+(state.lang==="en"?"Saved":"บันทึกสำเร็จ"));
+  render();
+}
+
+async function loadRecords(){
+  if(!SCRIPT_URL){
+    const local = JSON.parse(localStorage.getItem("cvn-sitmap-local") || "[]");
+    state.records = local; render(); return;
+  }
+  try {
+    const res = await fetch(SCRIPT_URL+"?action=list");
+    const data = await res.json();
+    if(data.success){
+      state.records = data.records; render();
+      toast(state.lang==="en"?`Loaded ${data.records.length} records`:`โหลด ${data.records.length} รายการ`);
+    }
+  } catch(e){toast(state.lang==="en"?"Load failed":"โหลดไม่สำเร็จ")}
+}
+
+// ══════════════════════════════════════════════════════════════
+//  BIND EVENTS
+// ══════════════════════════════════════════════════════════════
+function bindEvents(){
+  document.querySelectorAll("[data-info]").forEach(el => {
+    el.addEventListener("input", e => {state.info[e.target.dataset.info] = e.target.value});
+    el.addEventListener("change", e => {state.info[e.target.dataset.info] = e.target.value});
+  });
+  document.querySelectorAll("[data-fb]").forEach(el => {
+    el.addEventListener("input", e => {state.fb[e.target.dataset.fb] = e.target.value});
+  });
+  const pinInput = document.getElementById("pin-input");
+  if(pinInput){pinInput.addEventListener("keydown", e => {if(e.key==="Enter") checkPin();}); pinInput.focus();}
+  const sysPinInput = document.getElementById("system-pin-input");
+  if(sysPinInput){sysPinInput.addEventListener("keydown", e => {if(e.key==="Enter") checkSystemPin();}); sysPinInput.focus();}
+}
+
+// ══════════════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════════════
+function init(){
+  if(sessionStorage.getItem("cvn-sitmap-system-unlocked") === "1") state.systemUnlocked = true;
+  if(sessionStorage.getItem("cvn-sitmap-history-unlocked") === "1") state.historyUnlocked = true;
+  loadRecords();
+  render();
+  if(SCRIPT_URL){
+    const bar = document.getElementById("status-bar");
+    bar.style.display = "block"; bar.textContent = "🔄 Connecting..."; bar.className = "status-bar";
+    loadRecords().then(() => {
+      bar.textContent = "✅ Connected"; bar.className = "status-bar connected";
+      setTimeout(() => bar.style.display = "none", 3000);
+    }).catch(() => {bar.textContent = "❌ Connection failed"; bar.className = "status-bar error"});
+  }
+}
+init();
+</script>
+</body>
+</html>
