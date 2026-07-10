@@ -856,6 +856,61 @@ function renderForm(){
 }
 
 // ══════ SUMMARY VIEW ══════
+// ══════ RADAR CHART (SVG) — Active Learning ══════
+function renderALRadar(){
+  const cx = 150, cy = 150, R = 105;
+  // Colors for each domain
+  const domColors = ["#7c3aed", "#1d4ed8", "#dc2626", "#059669", "#c2410c"];
+  const domIcons = EVAL.map(d => d.icon);
+  const n = EVAL.length;
+
+  // Calculate values (0-1) for each domain
+  const values = EVAL.map(d => {
+    const dc = calcDom(d.id, state.scores);
+    return dc.w > 0 ? (dc.wt / dc.w) : 0; // 0-1 based on percentage
+  });
+
+  const angle = i => (Math.PI * 2 * i) / n - Math.PI / 2;
+  const pt = (i, r) => `${cx + Math.cos(angle(i)) * r},${cy + Math.sin(angle(i)) * r}`;
+
+  // Grid (5 levels)
+  let grid = "";
+  [.2, .4, .6, .8, 1].forEach(level => {
+    const points = Array.from({length: n}, (_, i) => pt(i, R * level)).join(" ");
+    grid += `<polygon points="${points}" fill="none" stroke="#e5e5e5" stroke-width="1"/>`;
+  });
+
+  // Axes
+  let axes = "";
+  for(let i = 0; i < n; i++){
+    axes += `<line x1="${cx}" y1="${cy}" x2="${cx + Math.cos(angle(i)) * R}" y2="${cy + Math.sin(angle(i)) * R}" stroke="#e5e5e5" stroke-width="1"/>`;
+  }
+
+  // Data polygon
+  const dataPoints = Array.from({length: n}, (_, i) => pt(i, R * values[i])).join(" ");
+  const dataPolygon = `<polygon points="${dataPoints}" fill="rgba(45,90,39,.25)" stroke="#2d5a27" stroke-width="2.5"/>`;
+
+  // Data dots
+  let dots = "";
+  for(let i = 0; i < n; i++){
+    const [x, y] = pt(i, R * values[i]).split(",");
+    dots += `<circle cx="${x}" cy="${y}" r="5" fill="${domColors[i]}" stroke="#fff" stroke-width="2"/>`;
+  }
+
+  // Labels (icon + domain number)
+  let labelsHtml = "";
+  for(let i = 0; i < n; i++){
+    const [lx, ly] = pt(i, R + 24).split(",");
+    labelsHtml += `<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" font-size="18">${domIcons[i]}</text>`;
+    const [nx, ny] = pt(i, R + 42).split(",");
+    labelsHtml += `<text x="${nx}" y="${ny}" text-anchor="middle" dominant-baseline="middle" font-size="13" font-weight="800" fill="${domColors[i]}">${EVAL[i].id}</text>`;
+  }
+
+  return `<svg viewBox="0 0 300 300" width="100%" style="max-width:320px;height:auto">
+    ${grid}${axes}${dataPolygon}${dots}${labelsHtml}
+  </svg>`;
+}
+
 function renderSummary(){
   const tw=calcAll(state.scores);const q=getQ(tw);
   const kIsFormal = (state.info.kind || "formal") === "formal";
@@ -868,6 +923,11 @@ function renderSummary(){
     <div style="font-size:13px;color:#6b7280">${L("score100")}</div>
     <div style="font-size:20px;font-weight:700;color:${q.c};margin-top:4px">${QL(q)}</div>
     ${state.info.teacher?`<div style="font-size:14px;color:#4a5e4a;margin-top:12px"><b>${esc(state.info.teacher)}</b> | ${L("supervisorLabel")}: <b>${esc(state.info.supervisor)}</b></div>`:""}
+  </div>`;
+
+  // Radar Chart
+  h+=`<div class="card"><div style="padding:12px 16px;border-bottom:1px solid #e8efe8;font-weight:700;font-size:15px;color:var(--g1)">📊 ${state.lang==="en"?"Active Learning Radar":"เรดาร์ 5 ด้าน"}</div>
+    <div style="padding:16px;display:flex;justify-content:center;align-items:center;background:#fafff5">${renderALRadar()}</div>
   </div>`;
   // Domain breakdown
   h+=`<div class="card"><div style="padding:12px 16px;border-bottom:1px solid #e8efe8;font-weight:700;font-size:15px;color:var(--g1)">${L("domainBreakdown")}</div>`;
@@ -924,6 +984,9 @@ function renderExport(){
   </div></div>`;
   // Score Hero
   h+=`<div style="text-align:center;padding:20px 16px;background:${q.bg};border-bottom:2px solid #e8efe8"><div style="font-size:40px">${q.e}</div><div style="font-size:48px;font-weight:900;color:${q.c}">${tw.toFixed(1)}<span style="font-size:20px;font-weight:400">/100</span></div><div style="font-size:18px;font-weight:700;color:${q.c}">${L("qualityLevel")}: ${QL(q)}</div></div>`;
+
+  // Radar Chart
+  h+=`<div style="padding:14px 16px;border-bottom:2px solid #e8efe8;text-align:center"><div style="font-size:14px;font-weight:700;color:var(--g1);margin-bottom:8px">📊 ${state.lang==="en"?"Active Learning Radar":"เรดาร์ 5 ด้าน"}</div><div style="display:flex;justify-content:center">${renderALRadar()}</div></div>`;
   // Domain detail
   h+=`<div style="padding:14px 16px"><div style="font-size:14px;font-weight:700;color:var(--g1);margin-bottom:10px">📊 ${L("domainDetail")}</div>`;
   EVAL.forEach(d=>{
@@ -1171,13 +1234,39 @@ function toggleSub(id){state.expSub[id]=!state.expSub[id];render()}
 function uploadPhoto(did){state.uploadTarget=did;document.getElementById("file-input").click()}
 function removePhoto(did,idx){state.photos[did].splice(idx,1);render()}
 
+// Helper: auto-download photo to device
+function autoDownloadPhoto(dataUrl, filename){
+  try {
+    const a = document.createElement("a");
+    a.href = dataUrl;
+    a.download = filename;
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => document.body.removeChild(a), 100);
+    return true;
+  } catch(e){
+    console.error("Download failed:", e);
+    return false;
+  }
+}
+
 document.getElementById("file-input").addEventListener("change",function(e){
   const f=e.target.files?.[0];if(!f||!state.uploadTarget)return;
   const r=new FileReader();
   r.onload=ev=>{
     if(!state.photos[state.uploadTarget])state.photos[state.uploadTarget]=[];
     state.photos[state.uploadTarget].push({name:f.name,data:ev.target.result});
-    toast("อัปโหลดสำเร็จ");render();
+    // Auto-save to device
+    const teacher = (state.info.teacher || "unknown").replace(/[^a-zA-Z0-9ก-๙]/g,"_").substring(0,20);
+    const date = state.info.date || new Date().toISOString().split("T")[0];
+    const dom = state.uploadTarget;
+    const idx = state.photos[state.uploadTarget].length;
+    const ext = f.name.split(".").pop() || "jpg";
+    const filename = `CVN_${teacher}_${date}_D${dom}_${idx}.${ext}`;
+    const saved = autoDownloadPhoto(ev.target.result, filename);
+    toast(saved ? (state.lang==="en"?"📥 Photo saved to device":"📥 บันทึกรูปลงเครื่องแล้ว") : (state.lang==="en"?"Photo uploaded":"อัปโหลดสำเร็จ"));
+    render();
   };
   r.readAsDataURL(f);e.target.value="";
 });
