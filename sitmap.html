@@ -758,7 +758,8 @@ function renderSummary(){
 // ══════════════════════════════════════════════════════════════
 //  RADAR CHART (SVG)
 // ══════════════════════════════════════════════════════════════
-function renderRadar(){
+function renderRadar(scoresArg){
+  const scoresData = scoresArg || state.scores;
   const cx = 150, cy = 150, R = 110;
   const labels = EVAL.map(d => d.letter);
   const colors = EVAL.map(d => `var(--${d.color})`);
@@ -766,7 +767,7 @@ function renderRadar(){
 
   // Calculate points
   const values = EVAL.map(d => {
-    const dc = calcDom(d.id, state.scores);
+    const dc = calcDom(d.id, scoresData);
     return dc.w > 0 ? (dc.wt/dc.w) : 0; // 0-1
   });
 
@@ -941,6 +942,11 @@ function renderHistory(){
       <div style="font-size:14px;color:#4a3e26;margin-top:12px"><b>${esc(r.teacher||"-")}</b></div>
       <div style="font-size:12px;color:#9ca3af">${dispClass(r.classLevel)} | ${L("supervisorLabel")}: ${esc(r.supervisor||"-")}</div>
       <div style="font-size:11px;color:#9ca3af;margin-top:4px">${r.timestamp?new Date(r.timestamp).toLocaleDateString(state.lang==="en"?"en-US":"th-TH",{day:"numeric",month:"long",year:"numeric"}):""}</div>
+    </div>`;
+
+    // SITMAP Radar Chart
+    h += `<div class="card"><div class="card-head">📊 SITMAP Radar</div>
+      <div class="radar-container">${renderRadar(rsc)}</div>
     </div>`;
 
     h += `<div class="card"><div style="padding:14px 16px;font-weight:700;font-size:16px;color:var(--g1);border-bottom:1px solid #e8efe8">${L("domainBreakdown")}</div>`;
