@@ -277,6 +277,16 @@ th:{
   schoolName:"โรงเรียนจารุวัฒนานุกูล",schoolSub:"ระบบนิเทศการสอน Active Learning",
   navForm:"📝 ฟอร์ม",navSummary:"📊 สรุปผล",navHistory:"📚 ประวัติ",
   generalInfo:"📋 ข้อมูลทั่วไป",teacher:"ชื่อผู้รับการนิเทศ *",position:"ตำแหน่ง",
+  kindLabel:"⚠️ ประเภทการนิเทศ",
+  kindFormal:"📊 เป็นทางการ",
+  kindFormalDesc:"นำไปใช้ประเมิน",
+  kindInformal:"📝 ไม่เป็นทางการ",
+  kindInformalDesc:"เพื่อพัฒนาการสอน",
+  kindHint:"💡 เลือกก่อนเริ่มประเมิน",
+  tabFormal:"📊 เป็นทางการ",
+  tabInformal:"📝 ไม่เป็นทางการ",
+  formalBadge:"📊 Formal",
+  informalBadge:"📝 Informal",
   subjectCode:"รหัสวิชา",subject:"ชื่อวิชา",level:"ระดับชั้น",students:"จำนวนนักเรียน",
   date:"วันที่สอน",period:"คาบเรียน",selectPeriod:"— เลือกคาบ —",periodN:"คาบที่",
   topic:"เรื่องที่สอน",supervisor:"ผู้นิเทศ *",visitNum:"ครั้งที่นิเทศ",selectVisit:"— เลือก —",
@@ -307,6 +317,16 @@ en:{
   schoolName:"Charuvatananukul School",schoolSub:"Active Learning Supervision System",
   navForm:"📝 Form",navSummary:"📊 Summary",navHistory:"📚 History",
   generalInfo:"📋 General Information",teacher:"Teacher Name *",position:"Position",
+  kindLabel:"⚠️ Supervision Type",
+  kindFormal:"📊 Formal",
+  kindFormalDesc:"Used for evaluation",
+  kindInformal:"📝 Informal",
+  kindInformalDesc:"For teaching development",
+  kindHint:"💡 Select before starting",
+  tabFormal:"📊 Formal",
+  tabInformal:"📝 Informal",
+  formalBadge:"📊 Formal",
+  informalBadge:"📝 Informal",
   subjectCode:"Subject Code",subject:"Subject",level:"Grade Level",students:"No. of Students",
   date:"Teaching Date",period:"Period",selectPeriod:"— Select Period —",periodN:"Period",
   topic:"Topic",supervisor:"Supervisor *",visitNum:"Visit No.",selectVisit:"— Select —",
@@ -570,7 +590,7 @@ function SL(v){return state.lang==="en"?SL_EN[v]:SL_TH[v]}
 let state = {
   view: "form",
   scores: {},
-  info: {teacher:"",position:"",subject:"",subjectCode:"",level:"",room:"",students:"",date:"",period:"",topic:"",supervisor:"",visitNum:"",semester:"",year:""},
+  info: {teacher:"",position:"",subject:"",subjectCode:"",level:"",room:"",students:"",date:"",period:"",topic:"",supervisor:"",visitNum:"",semester:"",year:"",kind:"formal"},
   fb: {strengths:"",growth:""},
   photos: {}, // {domainId: [{name, data}]}
   expDom: {1:true},
@@ -698,7 +718,29 @@ function updateFab(){
 function renderForm(){
   const info=state.info;
   const sl=state.lang;
-  let h=`<div class="card"><div class="card-head">${L("generalInfo")}</div><div class="grid2">`;
+
+  // Supervision Type (Formal/Informal)
+  const isFormal = info.kind === "formal" || !info.kind;
+  let h = `<div class="card" style="background:linear-gradient(135deg,${isFormal?'#fef2f2':'#eff6ff'},#fff);border:2px solid ${isFormal?'#dc2626':'#2563eb'}">
+    <div style="padding:14px 16px">
+      <div style="font-size:14px;font-weight:800;color:${isFormal?'#991b1b':'#1e40af'};margin-bottom:10px;text-align:center">${L("kindLabel")}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div onclick="setKind('formal')" style="padding:14px 10px;border-radius:12px;text-align:center;cursor:pointer;transition:all .2s;background:${isFormal?'linear-gradient(135deg,#dc2626,#991b1b)':'#fff'};color:${isFormal?'#fff':'#991b1b'};border:2px solid #dc2626;font-weight:800">
+          <div style="font-size:22px;margin-bottom:2px">📊</div>
+          <div style="font-size:14px;font-weight:800">${L("kindFormal")}</div>
+          <div style="font-size:10.5px;font-weight:600;opacity:.9;margin-top:2px">${L("kindFormalDesc")}</div>
+        </div>
+        <div onclick="setKind('informal')" style="padding:14px 10px;border-radius:12px;text-align:center;cursor:pointer;transition:all .2s;background:${!isFormal?'linear-gradient(135deg,#2563eb,#1e40af)':'#fff'};color:${!isFormal?'#fff':'#1e40af'};border:2px solid #2563eb;font-weight:800">
+          <div style="font-size:22px;margin-bottom:2px">📝</div>
+          <div style="font-size:14px;font-weight:800">${L("kindInformal")}</div>
+          <div style="font-size:10.5px;font-weight:600;opacity:.9;margin-top:2px">${L("kindInformalDesc")}</div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:#6b7280;text-align:center;margin-top:10px">${L("kindHint")}</div>
+    </div>
+  </div>`;
+
+  h+=`<div class="card"><div class="card-head">${L("generalInfo")}</div><div class="grid2">`;
 
   // Teacher name (text input)
   h+=`<div><label class="f-label">${L("teacher")}</label><input class="f-inp" data-info="teacher" value="${esc(info.teacher)}" placeholder="${L("teacher").replace(' *','')}"></div>`;
@@ -816,7 +858,11 @@ function renderForm(){
 // ══════ SUMMARY VIEW ══════
 function renderSummary(){
   const tw=calcAll(state.scores);const q=getQ(tw);
-  let h=`<div class="card" style="text-align:center;padding:28px 16px;background:linear-gradient(135deg,${q.bg},#fff)">
+  const kIsFormal = (state.info.kind || "formal") === "formal";
+  const kColor = kIsFormal ? "#dc2626" : "#2563eb";
+  const kLbl = kIsFormal ? L("formalBadge") : L("informalBadge");
+  let h=`<div class="card" style="text-align:center;padding:28px 16px;background:linear-gradient(135deg,${q.bg},#fff);position:relative">
+    <div style="position:absolute;top:12px;right:12px;background:${kColor};color:#fff;padding:4px 10px;border-radius:12px;font-size:11px;font-weight:800">${kLbl}</div>
     <div style="font-size:44px">${q.e}</div>
     <div style="font-size:52px;font-weight:900;color:${q.c};line-height:1">${tw.toFixed(1)}</div>
     <div style="font-size:13px;color:#6b7280">${L("score100")}</div>
@@ -864,7 +910,10 @@ function renderExport(){
   let h=`<button class="btn btn-outline no-print" style="width:auto;padding:8px 14px;margin-bottom:10px;font-size:13px" onclick="switchView('summary')">${L("back")}</button>`;
   h+=`<div class="export-doc" id="print-area">`;
   // Header
-  h+=`<div style="background:linear-gradient(135deg,var(--g1),var(--g2));color:#fff;padding:20px 16px;text-align:center"><div style="font-size:18px;font-weight:800">${L("exportTitle")}</div><div style="font-size:12px;opacity:.8">${L("schoolName")} | Active Learning</div></div>`;
+  const eKFormal = (inf.kind || "formal") === "formal";
+  const eKColor = eKFormal ? "#dc2626" : "#2563eb";
+  const eKLbl = eKFormal ? (state.lang==="en"?"📊 FORMAL EVALUATION":"📊 การนิเทศเป็นทางการ") : (state.lang==="en"?"📝 INFORMAL SUPERVISION":"📝 การนิเทศไม่เป็นทางการ");
+  h+=`<div style="background:linear-gradient(135deg,var(--g1),var(--g2));color:#fff;padding:20px 16px;text-align:center;position:relative"><div style="position:absolute;top:10px;right:10px;background:${eKColor};color:#fff;padding:4px 10px;border-radius:12px;font-size:10px;font-weight:800">${eKLbl}</div><div style="font-size:18px;font-weight:800">${L("exportTitle")}</div><div style="font-size:12px;opacity:.8">${L("schoolName")} | Active Learning</div></div>`;
   // Info
   h+=`<div style="padding:14px 16px;border-bottom:2px solid #e8efe8"><div style="font-size:14px;font-weight:700;color:var(--g1);margin-bottom:10px">${L("teacherInfo")}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;font-size:13px">
     <div><span style="color:#6b7280">${L("name")}:</span> <b>${esc(inf.teacher||"-")}</b></div><div><span style="color:#6b7280">${L("position")}:</span> ${dispPos(inf.position)}</div>
@@ -957,12 +1006,16 @@ function renderHistory(){
     const rsc=recScores(r);
     const rfb=recFb(r);
     let h=`<button class="btn btn-outline" style="width:auto;padding:8px 14px;margin-bottom:10px;font-size:13px" onclick="state.histDetail=null;render()">${L("back")}</button>`;
-    h+=`<div class="card" style="text-align:center;padding:24px 16px;background:linear-gradient(135deg,${rq.bg},#fff)">
+    const dKF = (r.kind || "formal") === "formal";
+    const dKC = dKF ? "#dc2626" : "#2563eb";
+    const dKL = dKF ? L("formalBadge") : L("informalBadge");
+    h+=`<div class="card" style="text-align:center;padding:24px 16px;background:linear-gradient(135deg,${rq.bg},#fff);position:relative">
+      <div style="position:absolute;top:12px;right:12px;background:${dKC};color:#fff;padding:4px 10px;border-radius:12px;font-size:11px;font-weight:800">${dKL}</div>
       <div style="font-size:40px">${rq.e}</div>
       <div style="font-size:42px;font-weight:900;color:${rq.c}">${tw.toFixed(1)}/100</div>
       <div style="font-size:18px;font-weight:700;color:${rq.c}">${rq.l}</div>
-      <div style="font-size:14px;color:#4a5e4a;margin-top:10px"><b>${r.teacher||"-"}</b></div>
-      <div style="font-size:12px;color:#9ca3af">${dispSubj(r.subject)||"-"} | ${L("supervisorLabel")}: ${r.supervisor||"-"}</div>
+      <div style="font-size:14px;color:#4a5e4a;margin-top:10px"><b>${esc(r.teacher||"-")}</b></div>
+      <div style="font-size:12px;color:#9ca3af">${dispSubj(r.subject)||"-"} | ${L("supervisorLabel")}: ${esc(r.supervisor||"-")}</div>
       <div style="font-size:11px;color:#9ca3af">${r.timestamp?new Date(r.timestamp).toLocaleDateString(state.lang==="en"?"en-US":"th-TH",{day:"numeric",month:"long",year:"numeric"}):""}  | ${L("periodN")} ${r.period||"-"} | ${L("visitN")} ${r.visitNum||"-"}</div>
     </div>`;
     // Domain scores
@@ -997,14 +1050,44 @@ function renderHistory(){
     return h;
   }
 
-  // List view
-  let h=`<div class="card" style="padding:16px;text-align:center"><div style="font-size:18px;font-weight:800;color:var(--g1)">${L("history")}</div><div style="font-size:12px;color:#6b7280">${state.records.length} ${L("historyN")}</div></div>`;
-  if(state.records.length===0){
+  // List view — with Formal/Informal tabs
+  const activeTab = state.histTab || "formal";
+  const formalRecs = state.records.filter(r => (r.kind || "formal") === "formal");
+  const informalRecs = state.records.filter(r => r.kind === "informal");
+  const filteredRecs = activeTab === "formal" ? formalRecs : informalRecs;
+
+  let h=`<div class="card" style="padding:16px;text-align:center"><div style="font-size:18px;font-weight:800;color:var(--g1)">${L("history")}</div><div style="font-size:12px;color:#6b7280">${state.records.length} ${L("historyN")} (${formalRecs.length} ${L("tabFormal").replace("📊 ","")}, ${informalRecs.length} ${L("tabInformal").replace("📝 ","")})</div></div>`;
+
+  // Tabs
+  h+=`<div style="display:flex;gap:8px;margin-bottom:12px;background:#fff;padding:6px;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.06)">
+    <button onclick="setHistTab('formal')" style="flex:1;padding:12px 8px;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;background:${activeTab==='formal'?'#dc2626':'transparent'};color:${activeTab==='formal'?'#fff':'#6b7280'};font-family:inherit">${L("tabFormal")} (${formalRecs.length})</button>
+    <button onclick="setHistTab('informal')" style="flex:1;padding:12px 8px;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;background:${activeTab==='informal'?'#2563eb':'transparent'};color:${activeTab==='informal'?'#fff':'#6b7280'};font-family:inherit">${L("tabInformal")} (${informalRecs.length})</button>
+  </div>`;
+
+  if(filteredRecs.length===0){
     h+=`<div class="card" style="padding:40px 20px;text-align:center"><div style="font-size:48px;margin-bottom:8px">📝</div><div style="font-size:14px;color:#6b7280">${L("noHistory")}</div></div>`;
   } else {
-    state.records.forEach((r,idx)=>{
+    filteredRecs.forEach(r=>{
+      const idx=state.records.indexOf(r);
       const tw=parseFloat(r.total_weighted)||0;const rq=getQ(tw);
-      h+=`<div class="card" style="cursor:pointer" onclick="viewRecord(${idx})"><div style="padding:12px 16px;display:flex;align-items:center;gap:10px"><div style="width:46px;height:46px;border-radius:10px;background:${rq.bg};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px">${rq.e}</div><div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:700;color:var(--g1)">${r.teacher||"-"}</div><div style="font-size:11px;color:#6b7280">${dispSubj(r.subject)||dispLevel(r.level)||"-"} | ${L("visitN")} ${r.visitNum||"-"} | ${L("periodN")} ${r.period||"-"}</div><div style="font-size:10px;color:#9ca3af">${r.timestamp?new Date(r.timestamp).toLocaleDateString(state.lang==="en"?"en-US":"th-TH",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}):""}</div></div><div style="text-align:right;flex-shrink:0"><div style="font-size:18px;font-weight:900;color:${rq.c}">${tw.toFixed(0)}</div><span class="badge" style="background:${rq.bg};color:${rq.c}">${QL(rq)}</span></div></div></div>`;
+      const rKF=(r.kind||"formal")==="formal";
+      const rKC=rKF?"#dc2626":"#2563eb";
+      const rKL=rKF?L("formalBadge"):L("informalBadge");
+      h+=`<div class="card" style="cursor:pointer;position:relative" onclick="viewRecord(${idx})">
+        <div style="position:absolute;top:8px;right:8px;background:${rKC};color:#fff;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:800;z-index:1">${rKL}</div>
+        <div style="padding:12px 16px;display:flex;align-items:center;gap:10px">
+          <div style="width:46px;height:46px;border-radius:10px;background:${rq.bg};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:20px">${rq.e}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:14px;font-weight:700;color:var(--g1);padding-right:70px">${esc(r.teacher||"-")}</div>
+            <div style="font-size:11px;color:#6b7280">${dispSubj(r.subject)||dispLevel(r.level)||"-"} | ${L("visitN")} ${r.visitNum||"-"} | ${L("periodN")} ${r.period||"-"}</div>
+            <div style="font-size:10px;color:#9ca3af">${r.timestamp?new Date(r.timestamp).toLocaleDateString(state.lang==="en"?"en-US":"th-TH",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}):""}</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <div style="font-size:18px;font-weight:900;color:${rq.c}">${tw.toFixed(0)}</div>
+            <span class="badge" style="background:${rq.bg};color:${rq.c}">${QL(rq)}</span>
+          </div>
+        </div>
+      </div>`;
     });
     h+=`<button class="btn btn-danger" style="margin-top:8px;margin-bottom:16px" onclick="clearAllRecords()">${L("clearAll")}</button>`;
   }
@@ -1012,6 +1095,8 @@ function renderHistory(){
   h+=`<button class="btn btn-outline" style="margin-bottom:16px;border-color:#6b7280;color:#6b7280" onclick="lockHistory()">🔒 ${state.lang==="en"?"Lock History":"ล็อกประวัติ"}</button>`;
   return h;
 }
+
+function setHistTab(t){state.histTab=t; render()}
 
 function viewRecord(idx){
   const r=state.records[idx];
@@ -1075,6 +1160,12 @@ function setScore(id,val){
   state.scores[id]=v;
   render();
 }
+function setKind(k){
+  if(k !== "formal" && k !== "informal") return;
+  state.info.kind = k;
+  render();
+  toast(k === "formal" ? (state.lang==="en"?"📊 Formal supervision":"📊 การนิเทศเป็นทางการ") : (state.lang==="en"?"📝 Informal supervision":"📝 การนิเทศไม่เป็นทางการ"));
+}
 function toggleDom(id){state.expDom[id]=!state.expDom[id];render()}
 function toggleSub(id){state.expSub[id]=!state.expSub[id];render()}
 function uploadPhoto(did){state.uploadTarget=did;document.getElementById("file-input").click()}
@@ -1093,7 +1184,7 @@ document.getElementById("file-input").addEventListener("change",function(e){
 
 function resetForm(){
   state.scores={};state.photos={};state.fb={strengths:"",growth:""};
-  state.info={teacher:"",position:"",subject:"",subjectCode:"",level:"",room:"",students:"",date:"",period:"",topic:"",supervisor:"",visitNum:"",semester:"",year:""};
+  state.info={teacher:"",position:"",subject:"",subjectCode:"",level:"",room:"",students:"",date:"",period:"",topic:"",supervisor:"",visitNum:"",semester:"",year:"",kind:"formal"};
   state.expDom={1:true};state.expSub={};state.saved=false;switchView("form");toast(state.lang==="en"?"Form cleared":"ล้างฟอร์มเรียบร้อย");
 }
 
@@ -1289,6 +1380,7 @@ function saveLocal(){
     date:state.info.date, period:state.info.period, topic:state.info.topic,
     supervisor:state.info.supervisor, visitNum:state.info.visitNum,
     semester:state.info.semester, year:state.info.year,
+    kind: state.info.kind || "formal",
     total_weighted:tw.toFixed(1), quality:q.l,
     scores:{...state.scores}, fb:{...state.fb}
   };
