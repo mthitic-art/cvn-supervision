@@ -319,6 +319,16 @@ th:{
   generalInfo:"📋 ข้อมูลทั่วไป", teacher:"ชื่อครูผู้สอน *", visitNum:"ครั้งที่นิเทศ",
   semester:"ภาคเรียน", year:"ปีการศึกษา", classLevel:"ชั้น", unit:"หน่วยการเรียนรู้",
   date:"วันที่สอน", supervisor:"ผู้นิเทศ *",
+  kindLabel:"⚠️ ประเภทการนิเทศ",
+  kindFormal:"📊 เป็นทางการ",
+  kindFormalDesc:"นำไปใช้ประเมิน",
+  kindInformal:"📝 ไม่เป็นทางการ",
+  kindInformalDesc:"เพื่อพัฒนาการสอน",
+  kindHint:"💡 เลือกก่อนเริ่มประเมิน",
+  tabFormal:"📊 เป็นทางการ",
+  tabInformal:"📝 ไม่เป็นทางการ",
+  formalBadge:"📊 Formal",
+  informalBadge:"📝 Informal",
   scored:"ประเมินแล้ว", points:"คะแนน",
   feedback:"💬 ข้อเสนอแนะ",
   point:"🎯 ประเด็นที่น่าสนใจ (Point)",
@@ -346,6 +356,16 @@ en:{
   generalInfo:"📋 General Information", teacher:"Teacher Name *", visitNum:"Visit No.",
   semester:"Semester", year:"Academic Year", classLevel:"Class", unit:"Learning Unit",
   date:"Teaching Date", supervisor:"Supervisor *",
+  kindLabel:"⚠️ Supervision Type",
+  kindFormal:"📊 Formal",
+  kindFormalDesc:"Used for evaluation",
+  kindInformal:"📝 Informal",
+  kindInformalDesc:"For teaching development",
+  kindHint:"💡 Select before starting",
+  tabFormal:"📊 Formal",
+  tabInformal:"📝 Informal",
+  formalBadge:"📊 Formal",
+  informalBadge:"📝 Informal",
   scored:"Scored", points:"points",
   feedback:"💬 Feedback",
   point:"🎯 Points of Interest",
@@ -407,7 +427,7 @@ function toggleLang(){
 let state = {
   view: "form",
   scores: {},
-  info: {teacher:"", classLevel:"", unit:"", date:"", supervisor:"", visitNum:"", semester:"", year:""},
+  info: {teacher:"", classLevel:"", unit:"", date:"", supervisor:"", visitNum:"", semester:"", year:"", kind:"formal"},
   fb: {point:"", comment:""},
   photos: {},
   expDom: {"S":true},
@@ -539,6 +559,27 @@ function renderForm(){
   });
   h += `</div></div>`;
 
+  // Supervision Type (Formal/Informal) — MUST select before evaluating
+  const isFormal = info.kind === "formal";
+  h += `<div class="card" style="background:linear-gradient(135deg,${isFormal?'#fef2f2':'#eff6ff'},#fff);border:2px solid ${isFormal?'#dc2626':'#2563eb'}">
+    <div style="padding:14px 16px">
+      <div style="font-size:14px;font-weight:800;color:${isFormal?'#991b1b':'#1e40af'};margin-bottom:10px;text-align:center">${L("kindLabel")}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div onclick="setKind('formal')" style="padding:14px 10px;border-radius:12px;text-align:center;cursor:pointer;transition:all .2s;background:${isFormal?'linear-gradient(135deg,#dc2626,#991b1b)':'#fff'};color:${isFormal?'#fff':'#991b1b'};border:2px solid #dc2626;font-weight:800">
+          <div style="font-size:22px;margin-bottom:2px">📊</div>
+          <div style="font-size:14px;font-weight:800">${L("kindFormal")}</div>
+          <div style="font-size:10.5px;font-weight:600;opacity:.9;margin-top:2px">${L("kindFormalDesc")}</div>
+        </div>
+        <div onclick="setKind('informal')" style="padding:14px 10px;border-radius:12px;text-align:center;cursor:pointer;transition:all .2s;background:${!isFormal?'linear-gradient(135deg,#2563eb,#1e40af)':'#fff'};color:${!isFormal?'#fff':'#1e40af'};border:2px solid #2563eb;font-weight:800">
+          <div style="font-size:22px;margin-bottom:2px">📝</div>
+          <div style="font-size:14px;font-weight:800">${L("kindInformal")}</div>
+          <div style="font-size:10.5px;font-weight:600;opacity:.9;margin-top:2px">${L("kindInformalDesc")}</div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:#6b7280;text-align:center;margin-top:10px">${L("kindHint")}</div>
+    </div>
+  </div>`;
+
   // General Info
   h += `<div class="card"><div class="card-head">${L("generalInfo")}</div><div class="grid2">`;
   h += `<div class="full"><label class="f-label">${L("teacher")}</label><input class="f-inp" data-info="teacher" value="${esc(info.teacher)}" placeholder="${L("teacher").replace(' *','')}"></div>`;
@@ -646,7 +687,11 @@ function renderForm(){
 // ══════════════════════════════════════════════════════════════
 function renderSummary(){
   const tw = calcAll(state.scores); const q = getQ(tw);
-  let h = `<div class="card score-hero" style="background:linear-gradient(135deg,${q.bg},#fff)">
+  const kindIsFormal = state.info.kind === "formal";
+  const kindColor = kindIsFormal ? "#dc2626" : "#2563eb";
+  const kindLabel = kindIsFormal ? L("formalBadge") : L("informalBadge");
+  let h = `<div class="card score-hero" style="background:linear-gradient(135deg,${q.bg},#fff);position:relative">
+    <div style="position:absolute;top:12px;right:12px;background:${kindColor};color:#fff;padding:4px 10px;border-radius:12px;font-size:11px;font-weight:800">${kindLabel}</div>
     <div class="emoji">${q.e}</div>
     <div class="total" style="color:${q.c}">${tw.toFixed(1)}</div>
     <div style="font-size:13px;color:#6b7280;margin-top:2px">${L("score100")}</div>
@@ -775,7 +820,14 @@ function renderExport(){
   h += `<div class="export-doc" id="print-area">`;
 
   // Header
-  h += `<div style="background:linear-gradient(135deg,var(--g1),var(--g2));color:#fff;padding:20px 16px;text-align:center"><div style="font-size:20px;font-weight:800">${L("exportTitle")}</div><div style="font-size:13px;opacity:.85;margin-top:2px">${L("schoolName")} | SITMAP Framework</div></div>`;
+  const expKindFormal = inf.kind === "formal" || !inf.kind;
+  const expKindColor = expKindFormal ? "#dc2626" : "#2563eb";
+  const expKindLbl = expKindFormal ? (state.lang==="en"?"📊 FORMAL EVALUATION":"📊 การนิเทศเป็นทางการ") : (state.lang==="en"?"📝 INFORMAL SUPERVISION":"📝 การนิเทศไม่เป็นทางการ");
+  h += `<div style="background:linear-gradient(135deg,var(--g1),var(--g2));color:#fff;padding:20px 16px;text-align:center;position:relative">
+    <div style="position:absolute;top:10px;right:10px;background:${expKindColor};color:#fff;padding:4px 10px;border-radius:12px;font-size:10px;font-weight:800">${expKindLbl}</div>
+    <div style="font-size:20px;font-weight:800">${L("exportTitle")}</div>
+    <div style="font-size:13px;opacity:.85;margin-top:2px">${L("schoolName")} | SITMAP Framework</div>
+  </div>`;
 
   // Info
   h += `<div style="padding:14px 16px;border-bottom:2px solid #e8efe8"><div style="font-size:15px;font-weight:700;color:var(--g1);margin-bottom:10px">📋 ${state.lang==="en"?"Teacher Information":"ข้อมูลผู้รับการนิเทศ"}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;font-size:13px">
@@ -878,7 +930,11 @@ function renderHistory(){
     const rfb = recFb(r);
 
     let h = `<button class="btn btn-outline" style="width:auto;padding:8px 14px;margin-bottom:10px;font-size:13px" onclick="state.histDetail=null;render()">${L("back")}</button>`;
-    h += `<div class="card score-hero" style="background:linear-gradient(135deg,${rq.bg},#fff)">
+    const detKindFormal = (r.kind || "formal") === "formal";
+    const detKindColor = detKindFormal ? "#dc2626" : "#2563eb";
+    const detKindLbl = detKindFormal ? L("formalBadge") : L("informalBadge");
+    h += `<div class="card score-hero" style="background:linear-gradient(135deg,${rq.bg},#fff);position:relative">
+      <div style="position:absolute;top:12px;right:12px;background:${detKindColor};color:#fff;padding:4px 10px;border-radius:12px;font-size:11px;font-weight:800">${detKindLbl}</div>
       <div class="emoji">${rq.e}</div>
       <div class="total" style="color:${rq.c}">${tw.toFixed(1)}/100</div>
       <div class="quality" style="color:${rq.c}">${QL(rq)}</div>
@@ -919,15 +975,45 @@ function renderHistory(){
     return h;
   }
 
-  // List view
-  let h = `<div class="card" style="padding:16px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--g1)">${L("history")}</div><div style="font-size:13px;color:#6b7280">${state.records.length} ${L("historyN")}</div></div>`;
-  if(state.records.length === 0){
+  // List view — with Formal/Informal tabs
+  const activeTab = state.histTab || "formal";
+  const formalRecs = state.records.filter(r => (r.kind || "formal") === "formal");
+  const informalRecs = state.records.filter(r => r.kind === "informal");
+  const filteredRecs = activeTab === "formal" ? formalRecs : informalRecs;
+
+  let h = `<div class="card" style="padding:16px;text-align:center"><div style="font-size:20px;font-weight:800;color:var(--g1)">${L("history")}</div><div style="font-size:13px;color:#6b7280">${state.records.length} ${L("historyN")} (${formalRecs.length} ${L("tabFormal").replace("📊 ","")}, ${informalRecs.length} ${L("tabInformal").replace("📝 ","")})</div></div>`;
+
+  // Tabs
+  h += `<div style="display:flex;gap:8px;margin-bottom:12px;background:#fff;padding:6px;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.06)">
+    <button onclick="setHistTab('formal')" style="flex:1;padding:12px 8px;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;background:${activeTab==='formal'?'#dc2626':'transparent'};color:${activeTab==='formal'?'#fff':'#6b7280'};font-family:inherit">${L("tabFormal")} (${formalRecs.length})</button>
+    <button onclick="setHistTab('informal')" style="flex:1;padding:12px 8px;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;background:${activeTab==='informal'?'#2563eb':'transparent'};color:${activeTab==='informal'?'#fff':'#6b7280'};font-family:inherit">${L("tabInformal")} (${informalRecs.length})</button>
+  </div>`;
+
+  if(filteredRecs.length === 0){
     h += `<div class="card" style="padding:40px 20px;text-align:center"><div style="font-size:48px;margin-bottom:8px">📝</div><div style="font-size:14px;color:#6b7280">${L("noHistory")}</div></div>`;
   } else {
-    state.records.forEach((r, idx) => {
+    filteredRecs.forEach(r => {
+      const idx = state.records.indexOf(r);
       const tw = parseFloat(r.total_weighted) || 0;
       const rq = getQ(tw);
-      h += `<div class="card" style="cursor:pointer" onclick="viewRecord(${idx})"><div style="padding:14px 16px;display:flex;align-items:center;gap:12px"><div style="width:50px;height:50px;border-radius:12px;background:${rq.bg};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px">${rq.e}</div><div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:700;color:var(--g1)">${esc(r.teacher||"-")}</div><div style="font-size:11px;color:#6b7280">${dispClass(r.classLevel)} | ${L("visitLabel")} ${r.visitNum||"-"}</div><div style="font-size:10px;color:#9ca3af">${r.timestamp?new Date(r.timestamp).toLocaleDateString(state.lang==="en"?"en-US":"th-TH",{day:"numeric",month:"short",year:"numeric"}):""}</div></div><div style="text-align:right;flex-shrink:0"><div style="font-size:20px;font-weight:900;color:${rq.c}">${tw.toFixed(0)}</div><span class="badge" style="background:${rq.bg};color:${rq.c}">${QL(rq)}</span></div></div></div>`;
+      const rKindFormal = (r.kind || "formal") === "formal";
+      const rKindColor = rKindFormal ? "#dc2626" : "#2563eb";
+      const rKindLbl = rKindFormal ? L("formalBadge") : L("informalBadge");
+      h += `<div class="card" style="cursor:pointer;position:relative" onclick="viewRecord(${idx})">
+        <div style="position:absolute;top:8px;right:8px;background:${rKindColor};color:#fff;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:800;z-index:1">${rKindLbl}</div>
+        <div style="padding:14px 16px;display:flex;align-items:center;gap:12px">
+          <div style="width:50px;height:50px;border-radius:12px;background:${rq.bg};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px">${rq.e}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:15px;font-weight:700;color:var(--g1);padding-right:70px">${esc(r.teacher||"-")}</div>
+            <div style="font-size:11px;color:#6b7280">${dispClass(r.classLevel)} | ${L("visitLabel")} ${r.visitNum||"-"}</div>
+            <div style="font-size:10px;color:#9ca3af">${r.timestamp?new Date(r.timestamp).toLocaleDateString(state.lang==="en"?"en-US":"th-TH",{day:"numeric",month:"short",year:"numeric"}):""}</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <div style="font-size:20px;font-weight:900;color:${rq.c}">${tw.toFixed(0)}</div>
+            <span class="badge" style="background:${rq.bg};color:${rq.c}">${QL(rq)}</span>
+          </div>
+        </div>
+      </div>`;
     });
     h += `<button class="btn btn-danger" style="margin-top:8px;margin-bottom:8px" onclick="clearAllRecords()">${L("clearAll")}</button>`;
   }
@@ -935,6 +1021,8 @@ function renderHistory(){
   h += `<button class="btn btn-outline" style="margin-bottom:16px;border-color:#6b7280;color:#6b7280" onclick="lockHistory()">🔒 ${state.lang==="en"?"Lock History":"ล็อกประวัติ"}</button>`;
   return h;
 }
+
+function setHistTab(t){state.histTab = t; render()}
 
 // ══════════════════════════════════════════════════════════════
 //  ACTIONS
@@ -944,6 +1032,12 @@ function setScore(id, val){
   if(isNaN(v) || v<1 || v>5) return;
   state.scores[id] = v;
   render();
+}
+function setKind(k){
+  if(k !== "formal" && k !== "informal") return;
+  state.info.kind = k;
+  render();
+  toast(k === "formal" ? (state.lang==="en"?"📊 Formal supervision":"📊 การนิเทศเป็นทางการ") : (state.lang==="en"?"📝 Informal supervision":"📝 การนิเทศไม่เป็นทางการ"));
 }
 function toggleDom(id){state.expDom[id] = !state.expDom[id]; render()}
 function uploadPhoto(did){state.uploadTarget = did; document.getElementById("file-input").click()}
@@ -971,7 +1065,7 @@ document.getElementById("file-input").addEventListener("change", function(e){
 
 function resetForm(){
   state.scores = {}; state.photos = {}; state.fb = {point:"", comment:""};
-  state.info = {teacher:"", classLevel:"", unit:"", date:"", supervisor:"", visitNum:"", semester:"", year:""};
+  state.info = {teacher:"", classLevel:"", unit:"", date:"", supervisor:"", visitNum:"", semester:"", year:"", kind:"formal"};
   state.expDom = {"S":true}; state.saved = false;
   switchView("form");
   toast(state.lang==="en"?"Form cleared":"ล้างฟอร์มเรียบร้อย");
@@ -1223,6 +1317,7 @@ function saveLocal(){
     unit: state.info.unit, date: state.info.date,
     supervisor: state.info.supervisor, visitNum: state.info.visitNum,
     semester: state.info.semester, year: state.info.year,
+    kind: state.info.kind || "formal",
     total_weighted: tw.toFixed(1), quality: q.l,
     scores: {...state.scores}, fb: {...state.fb}
   };
