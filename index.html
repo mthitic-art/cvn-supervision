@@ -857,7 +857,8 @@ function renderForm(){
 
 // ══════ SUMMARY VIEW ══════
 // ══════ RADAR CHART (SVG) — Active Learning ══════
-function renderALRadar(){
+function renderALRadar(scoresArg){
+  const scoresData = scoresArg || state.scores;
   const cx = 150, cy = 150, R = 105;
   // Colors for each domain
   const domColors = ["#7c3aed", "#1d4ed8", "#dc2626", "#059669", "#c2410c"];
@@ -866,7 +867,7 @@ function renderALRadar(){
 
   // Calculate values (0-1) for each domain
   const values = EVAL.map(d => {
-    const dc = calcDom(d.id, state.scores);
+    const dc = calcDom(d.id, scoresData);
     return dc.w > 0 ? (dc.wt / dc.w) : 0; // 0-1 based on percentage
   });
 
@@ -1081,6 +1082,12 @@ function renderHistory(){
       <div style="font-size:12px;color:#9ca3af">${dispSubj(r.subject)||"-"} | ${L("supervisorLabel")}: ${esc(r.supervisor||"-")}</div>
       <div style="font-size:11px;color:#9ca3af">${r.timestamp?new Date(r.timestamp).toLocaleDateString(state.lang==="en"?"en-US":"th-TH",{day:"numeric",month:"long",year:"numeric"}):""}  | ${L("periodN")} ${r.period||"-"} | ${L("visitN")} ${r.visitNum||"-"}</div>
     </div>`;
+
+    // Radar Chart
+    h+=`<div class="card"><div style="padding:12px 16px;border-bottom:1px solid #e8efe8;font-weight:700;font-size:15px;color:var(--g1)">📊 ${state.lang==="en"?"Active Learning Radar":"เรดาร์ 5 ด้าน"}</div>
+      <div style="padding:16px;display:flex;justify-content:center;align-items:center;background:#fafff5">${renderALRadar(rsc)}</div>
+    </div>`;
+
     // Domain scores
     h+=`<div class="card"><div style="padding:12px 16px;border-bottom:1px solid #e8efe8;font-weight:700;font-size:15px;color:var(--g1)">📊 ${L("domainDetail")}</div>`;
     EVAL.forEach(d=>{
