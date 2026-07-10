@@ -1052,13 +1052,39 @@ function updateDate(){
   updateFab();
 }
 
+// Helper: auto-download photo to device
+function autoDownloadPhoto(dataUrl, filename){
+  try {
+    const a = document.createElement("a");
+    a.href = dataUrl;
+    a.download = filename;
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => document.body.removeChild(a), 100);
+    return true;
+  } catch(e){
+    console.error("Download failed:", e);
+    return false;
+  }
+}
+
 document.getElementById("file-input").addEventListener("change", function(e){
   const f = e.target.files?.[0]; if(!f || !state.uploadTarget) return;
   const r = new FileReader();
   r.onload = ev => {
     if(!state.photos[state.uploadTarget]) state.photos[state.uploadTarget] = [];
     state.photos[state.uploadTarget].push({name: f.name, data: ev.target.result});
-    toast(state.lang==="en"?"Photo uploaded":"อัปโหลดสำเร็จ"); render();
+    // Auto-save to device
+    const teacher = (state.info.teacher || "unknown").replace(/[^a-zA-Z0-9ก-๙]/g,"_").substring(0,20);
+    const date = state.info.date || new Date().toISOString().split("T")[0];
+    const dom = state.uploadTarget;
+    const idx = state.photos[state.uploadTarget].length;
+    const ext = f.name.split(".").pop() || "jpg";
+    const filename = `CVN_SITMAP_${teacher}_${date}_${dom}${idx}.${ext}`;
+    const saved = autoDownloadPhoto(ev.target.result, filename);
+    toast(saved ? (state.lang==="en"?"📥 Photo saved to device":"📥 บันทึกรูปลงเครื่องแล้ว") : (state.lang==="en"?"Photo uploaded":"อัปโหลดสำเร็จ"));
+    render();
   };
   r.readAsDataURL(f); e.target.value = "";
 });
