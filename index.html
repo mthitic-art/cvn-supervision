@@ -1383,8 +1383,21 @@ async function saveToSheet(){
   state.saving=true;render();
   const tw=calcAll(state.scores);const q=getQ(tw);
 
-  // Don't send photos via form (too large) — photos save to Drive only when hosted
-  const body={info:state.info,scores:state.scores,feedback:state.fb,photos:[],totalWeighted:tw.toFixed(1),quality:QL(q)};
+  // Collect photos as base64 array with metadata
+  const photoArray = [];
+  EVAL.forEach(d => {
+    const photos = state.photos[d.id] || [];
+    photos.forEach((p, i) => {
+      photoArray.push({
+        domain: d.id,
+        idx: i + 1,
+        name: p.name || `photo_${d.id}_${i+1}.jpg`,
+        data: p.data  // base64 data URL
+      });
+    });
+  });
+
+  const body={info:state.info,scores:state.scores,feedback:state.fb,photos:photoArray,totalWeighted:tw.toFixed(1),quality:QL(q)};
   const jsonStr=JSON.stringify(body);
 
   // Method 1: Try fetch with no-cors (works on hosted sites)
