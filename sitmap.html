@@ -316,7 +316,7 @@ const UI = {
 th:{
   schoolName:"โรงเรียนจารุวัฒนานุกูล", schoolSub:"📋 SITMAP — แบบนิเทศการสอน ระดับอนุบาล",
   navForm:"📝 ฟอร์ม", navSummary:"📊 สรุปผล", navHistory:"📚 ประวัติ",
-  generalInfo:"📋 ข้อมูลทั่วไป", teacher:"ชื่อครูผู้สอน *", visitNum:"ครั้งที่นิเทศ",
+  generalInfo:"📋 ข้อมูลทั่วไป", teacher:"ชื่อครูผู้สอน *", teacherEmail:"📧 Email ครูผู้รับการนิเทศ", visitNum:"ครั้งที่นิเทศ",
   semester:"ภาคเรียน", year:"ปีการศึกษา", classLevel:"ชั้น", unit:"หน่วยการเรียนรู้",
   date:"วันที่สอน", supervisor:"ผู้นิเทศ *",
   kindLabel:"⚠️ ประเภทการนิเทศ",
@@ -353,7 +353,7 @@ th:{
 en:{
   schoolName:"Charuvatananukul School", schoolSub:"📋 SITMAP — Kindergarten Supervision Form",
   navForm:"📝 Form", navSummary:"📊 Summary", navHistory:"📚 History",
-  generalInfo:"📋 General Information", teacher:"Teacher Name *", visitNum:"Visit No.",
+  generalInfo:"📋 General Information", teacher:"Teacher Name *", teacherEmail:"📧 Teacher Email", visitNum:"Visit No.",
   semester:"Semester", year:"Academic Year", classLevel:"Class", unit:"Learning Unit",
   date:"Teaching Date", supervisor:"Supervisor *",
   kindLabel:"⚠️ Supervision Type",
@@ -427,7 +427,7 @@ function toggleLang(){
 let state = {
   view: "form",
   scores: {},
-  info: {teacher:"", classLevel:"", unit:"", date:"", supervisor:"", visitNum:"", semester:"", year:"", kind:"formal"},
+  info: {teacher:"", teacherEmail:"", classLevel:"", unit:"", date:"", supervisor:"", visitNum:"", semester:"", year:"", kind:"formal"},
   fb: {point:"", comment:""},
   photos: {},
   expDom: {"S":true},
@@ -583,6 +583,7 @@ function renderForm(){
   // General Info
   h += `<div class="card"><div class="card-head">${L("generalInfo")}</div><div class="grid2">`;
   h += `<div class="full"><label class="f-label">${L("teacher")}</label><input class="f-inp" data-info="teacher" value="${esc(info.teacher)}" placeholder="${L("teacher").replace(' *','')}"></div>`;
+  h += `<div class="full"><label class="f-label">${L("teacherEmail")}</label><input type="email" class="f-inp" data-info="teacherEmail" value="${esc(info.teacherEmail)}" placeholder="teacher@example.com" autocomplete="off" autocapitalize="none"></div>`;
   h += `<div><label class="f-label">${L("classLevel")}</label><select class="f-inp" data-info="classLevel"><option value="">${L("selectN")}</option>`;
   CLASS_LEVELS.forEach(c => {
     const lbl = sl==="en"?(CLASS_EN[c]||c):c;
@@ -1097,7 +1098,7 @@ document.getElementById("file-input").addEventListener("change", function(e){
 
 function resetForm(){
   state.scores = {}; state.photos = {}; state.fb = {point:"", comment:""};
-  state.info = {teacher:"", classLevel:"", unit:"", date:"", supervisor:"", visitNum:"", semester:"", year:"", kind:"formal"};
+  state.info = {teacher:"", teacherEmail:"", classLevel:"", unit:"", date:"", supervisor:"", visitNum:"", semester:"", year:"", kind:"formal"};
   state.expDom = {"S":true}; state.saved = false;
   switchView("form");
   toast(state.lang==="en"?"Form cleared":"ล้างฟอร์มเรียบร้อย");
@@ -1298,7 +1299,22 @@ async function saveToSheet(){
 
   state.saving = true; render();
   const tw = calcAll(state.scores); const q = getQ(tw);
-  const body = {info: state.info, scores: state.scores, feedback: state.fb, photos: [], totalWeighted: tw.toFixed(1), quality: QL(q), framework: "SITMAP"};
+
+  // Collect photos as base64 array with metadata
+  const photoArray = [];
+  EVAL.forEach(d => {
+    const photos = state.photos[d.id] || [];
+    photos.forEach((p, i) => {
+      photoArray.push({
+        domain: d.id,   // S, I, T, M, A
+        idx: i + 1,
+        name: p.name || `photo_${d.id}_${i+1}.jpg`,
+        data: p.data
+      });
+    });
+  });
+
+  const body = {info: state.info, scores: state.scores, feedback: state.fb, photos: photoArray, totalWeighted: tw.toFixed(1), quality: QL(q), framework: "SITMAP"};
   const jsonStr = JSON.stringify(body);
 
   let success = false;
