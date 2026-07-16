@@ -1,0 +1,996 @@
+<!-- CVN Dashboard v1.0 - Realtime -->
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CVN Dashboard — ภาพรวมการนิเทศการสอน</title>
+<style>
+:root {
+  --g1:#1a3a18; --g2:#2d5a27; --g3:#4a7042; --gold:#c9a84c;
+  --bg:#f0f7f0; --bg2:#fafff5; --card:#ffffff;
+  --red:#dc2626; --blue:#2563eb; --green:#15803d; --amber:#f59e0b;
+  --text:#1a2e1a; --muted:#6b7280; --border:#d1e0d1;
+}
+* {box-sizing:border-box; margin:0; padding:0}
+body {
+  font-family:'Sarabun','Tahoma',sans-serif;
+  background:linear-gradient(180deg,#f0f7f0 0%,#ffffff 100%);
+  color:var(--text); min-height:100vh; padding:16px;
+}
+.container {max-width:1400px; margin:0 auto}
+
+/* Header */
+.hero {
+  background:linear-gradient(135deg,#1a3a18 0%,#2d5a27 100%);
+  border-radius:16px; padding:24px; color:white;
+  position:relative; overflow:hidden; margin-bottom:20px;
+  box-shadow:0 4px 20px rgba(26,58,24,0.15);
+}
+.hero-content {display:flex; align-items:center; gap:16px; flex-wrap:wrap}
+.logo {
+  width:56px; height:56px; background:rgba(255,255,255,0.15);
+  border-radius:12px; display:flex; align-items:center; justify-content:center;
+  font-size:22px; font-weight:700; border:2px solid var(--gold);
+}
+.hero h1 {font-size:24px; margin-bottom:4px}
+.hero .sub {font-size:13px; opacity:0.85}
+.live-badge {
+  position:absolute; top:16px; right:20px;
+  display:flex; align-items:center; gap:8px;
+  background:rgba(255,255,255,0.15); padding:6px 12px;
+  border-radius:20px; font-size:11px;
+}
+.live-dot {
+  width:8px; height:8px; background:#4ade80; border-radius:50%;
+  animation:pulse 2s infinite; box-shadow:0 0 8px #4ade80;
+}
+@keyframes pulse {0%,100%{opacity:1}50%{opacity:0.4}}
+
+/* Filter Bar */
+.filters {
+  display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap;
+  background:white; padding:12px; border-radius:12px;
+  box-shadow:0 1px 3px rgba(0,0,0,0.05);
+}
+.filter-group {
+  display:flex; background:var(--bg); border-radius:8px; padding:3px;
+  border:1px solid var(--border);
+}
+.filter-btn {
+  padding:6px 14px; border:none; background:transparent;
+  color:var(--muted); border-radius:6px; font-size:12px;
+  cursor:pointer; font-family:inherit; transition:0.2s;
+}
+.filter-btn.active {background:var(--g1); color:white; font-weight:500}
+.filter-btn:hover:not(.active) {background:rgba(0,0,0,0.05)}
+.refresh-btn {
+  margin-left:auto; padding:6px 14px;
+  background:var(--g1); color:white; border:none;
+  border-radius:6px; font-size:12px; cursor:pointer;
+  display:flex; align-items:center; gap:6px; font-family:inherit;
+}
+.refresh-btn:hover {background:var(--g2)}
+.refresh-btn:disabled {opacity:0.5; cursor:not-allowed}
+
+/* KPI Cards */
+.kpis {
+  display:grid; grid-template-columns:repeat(4,1fr); gap:12px;
+  margin-bottom:20px;
+}
+.kpi {
+  background:white; border-radius:12px; padding:16px;
+  border-left:4px solid var(--g2); box-shadow:0 1px 3px rgba(0,0,0,0.05);
+  transition:0.2s;
+}
+.kpi:hover {transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,0.08)}
+.kpi-head {display:flex; justify-content:space-between; align-items:center; margin-bottom:8px}
+.kpi-icon {font-size:22px}
+.kpi-badge {
+  font-size:10px; padding:2px 8px; border-radius:10px; font-weight:500;
+}
+.kpi-label {font-size:11px; color:var(--muted); margin-bottom:4px}
+.kpi-value {font-size:30px; font-weight:700; color:var(--g1); line-height:1.1}
+.kpi-value .small {font-size:14px; color:var(--muted); font-weight:400}
+.kpi-value.red {color:var(--red)}
+.badge-green {background:#dcfce7; color:#15803d}
+.badge-yellow {background:#fef3c7; color:#92400e}
+.badge-blue {background:#dbeafe; color:#1e40af}
+.badge-red {background:#fee2e2; color:#b91c1c}
+.kpi.k-blue {border-left-color:var(--blue)}
+.kpi.k-amber {border-left-color:var(--amber)}
+.kpi.k-red {border-left-color:var(--red)}
+
+/* Charts Grid */
+.grid-2 {
+  display:grid; grid-template-columns:1.5fr 1fr; gap:12px; margin-bottom:12px;
+}
+.grid-1-1 {
+  display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;
+}
+.card {
+  background:white; border-radius:12px; padding:16px;
+  box-shadow:0 1px 3px rgba(0,0,0,0.05);
+}
+.card-head {
+  display:flex; justify-content:space-between; align-items:flex-start;
+  margin-bottom:12px;
+}
+.card-title {font-size:14px; font-weight:600; color:var(--g1); margin-bottom:2px}
+.card-sub {font-size:11px; color:var(--muted)}
+.legend {display:flex; gap:12px; font-size:11px}
+.legend-item {display:flex; align-items:center; gap:4px; color:var(--muted)}
+.legend-swatch {width:12px; height:3px; border-radius:2px}
+
+/* Top/Bottom Lists */
+.list-item {
+  display:flex; align-items:center; gap:10px; padding:10px;
+  background:var(--bg); border-radius:8px; margin-bottom:6px;
+}
+.list-item.top-1 {background:linear-gradient(90deg,#fef9c3 0%,white 100%); border-left:3px solid #eab308}
+.list-item.top-2 {background:linear-gradient(90deg,#f1f5f9 0%,white 100%); border-left:3px solid #94a3b8}
+.list-item.top-3 {background:linear-gradient(90deg,#ffedd5 0%,white 100%); border-left:3px solid #ea580c}
+.list-item.warn {background:#fef2f2; border-left:3px solid var(--red)}
+.list-item.caution {background:#fef7ed; border-left:3px solid var(--amber)}
+.medal {font-size:20px}
+.avatar {
+  width:32px; height:32px; border-radius:50%; background:#fecaca;
+  display:flex; align-items:center; justify-content:center;
+  font-weight:700; color:#991b1b; font-size:12px;
+}
+.list-name {flex:1}
+.list-name .name {font-size:12px; font-weight:600; color:var(--g1); margin-bottom:2px}
+.list-name .meta {font-size:10px; color:var(--muted)}
+.list-score {font-size:16px; font-weight:700; color:var(--green)}
+.list-score.red {color:var(--red)}
+.list-score.amber {color:var(--amber)}
+
+/* Activity Feed */
+.activity-item {
+  display:flex; align-items:center; gap:12px; padding:10px 12px;
+  background:var(--bg); border-radius:8px; margin-bottom:6px; font-size:12px;
+}
+.activity-badge {
+  font-size:10px; padding:2px 8px; border-radius:10px; font-weight:500;
+  color:white; white-space:nowrap;
+}
+.badge-formal {background:var(--red)}
+.badge-informal {background:var(--blue)}
+.activity-teacher {flex:1; overflow:hidden; text-overflow:ellipsis}
+.activity-score {font-weight:700; color:var(--green)}
+.activity-time {font-size:10px; color:var(--muted); white-space:nowrap}
+
+/* Loading & Empty */
+.loading {
+  text-align:center; padding:40px; color:var(--muted);
+}
+.loader {
+  display:inline-block; width:24px; height:24px;
+  border:3px solid var(--border); border-top-color:var(--g1);
+  border-radius:50%; animation:spin 1s linear infinite;
+}
+@keyframes spin {to{transform:rotate(360deg)}}
+.empty {text-align:center; padding:24px; color:var(--muted); font-size:13px}
+
+/* Actions */
+.actions {
+  display:flex; gap:8px; justify-content:flex-end; margin-top:12px;
+}
+.btn {
+  padding:8px 14px; background:white; color:var(--g2);
+  border:1px solid var(--g2); border-radius:8px;
+  font-size:12px; font-weight:500; cursor:pointer;
+  display:flex; align-items:center; gap:6px; font-family:inherit;
+  transition:0.2s;
+}
+.btn:hover {background:var(--bg2)}
+.btn.primary {background:var(--g1); color:white; border-color:var(--g1)}
+.btn.primary:hover {background:var(--g2)}
+
+/* Footer */
+.footer {
+  text-align:center; padding:16px; font-size:10px; color:var(--muted);
+  margin-top:20px; border-top:1px solid var(--border);
+}
+
+/* PIN Lock */
+.lock {
+  position:fixed; inset:0; background:rgba(26,58,24,0.95);
+  display:flex; align-items:center; justify-content:center;
+  z-index:100;
+}
+.lock-card {
+  background:white; padding:32px; border-radius:16px;
+  text-align:center; max-width:340px; width:90%;
+  box-shadow:0 20px 60px rgba(0,0,0,0.3);
+}
+.lock-icon {font-size:48px; margin-bottom:12px}
+.lock h2 {color:var(--g1); margin-bottom:8px; font-size:20px}
+.lock p {color:var(--muted); font-size:13px; margin-bottom:20px}
+.lock input {
+  width:100%; padding:12px 16px; font-size:16px;
+  border:2px solid var(--border); border-radius:8px;
+  outline:none; text-align:center; letter-spacing:2px;
+  font-family:inherit;
+}
+.lock input:focus {border-color:var(--g2)}
+.lock button {
+  width:100%; margin-top:12px; padding:12px;
+  background:var(--g1); color:white; border:none;
+  border-radius:8px; font-size:14px; font-weight:500;
+  cursor:pointer; font-family:inherit;
+}
+.lock button:hover {background:var(--g2)}
+.lock-err {color:var(--red); font-size:12px; margin-top:8px; min-height:16px}
+
+/* Responsive */
+@media (max-width:900px) {
+  .kpis {grid-template-columns:repeat(2,1fr)}
+  .grid-2, .grid-1-1 {grid-template-columns:1fr}
+  .hero h1 {font-size:20px}
+  .live-badge {position:static; margin-top:8px; display:inline-flex}
+}
+@media (max-width:600px) {
+  body {padding:8px}
+  .filters {gap:6px}
+  .filter-btn {padding:6px 10px; font-size:11px}
+}
+</style>
+</head>
+<body>
+
+<!-- PIN Lock -->
+<div class="lock" id="lock">
+  <div class="lock-card">
+    <div class="lock-icon">🔒</div>
+    <h2>Dashboard นิเทศการสอน</h2>
+    <p>สำหรับผู้บริหารและผู้นิเทศเท่านั้น<br>กรุณาใส่รหัสเข้าใช้งาน</p>
+    <input type="password" id="pin" placeholder="ใส่รหัส PIN" autofocus>
+    <button onclick="unlock()">🔓 เข้าสู่ระบบ</button>
+    <div class="lock-err" id="pinErr"></div>
+  </div>
+</div>
+
+<div class="container" id="app" style="display:none">
+
+<!-- Hero Header -->
+<div class="hero">
+  <div class="live-badge">
+    <span class="live-dot"></span>
+    <span>Realtime · อัปเดตอัตโนมัติ</span>
+  </div>
+  <div class="hero-content">
+    <div class="logo">CVN</div>
+    <div>
+      <h1>Dashboard นิเทศการสอน</h1>
+      <div class="sub">โรงเรียนจารุวัฒนานุกูล · <span id="lastUpdate">กำลังโหลด...</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="filters">
+  <div class="filter-group">
+    <button class="filter-btn active" data-system="all">📊 ทั้งหมด</button>
+    <button class="filter-btn" data-system="al">🧠 AL</button>
+    <button class="filter-btn" data-system="sitmap">🧸 SITMAP</button>
+  </div>
+  <div class="filter-group">
+    <button class="filter-btn active" data-kind="all">ทั้งหมด</button>
+    <button class="filter-btn" data-kind="formal">📊 Formal</button>
+    <button class="filter-btn" data-kind="informal">📝 Informal</button>
+  </div>
+  <button class="refresh-btn" id="refreshBtn" onclick="loadData(true)">
+    <span>🔄</span>
+    <span>รีเฟรช</span>
+  </button>
+</div>
+
+<!-- KPI Cards -->
+<div class="kpis">
+  <div class="kpi">
+    <div class="kpi-head">
+      <span class="kpi-icon">👥</span>
+      <span class="kpi-badge badge-green" id="kpiTeachersDelta">-</span>
+    </div>
+    <div class="kpi-label">การนิเทศทั้งหมด</div>
+    <div class="kpi-value" id="kpiTeachers">0</div>
+  </div>
+
+  <div class="kpi k-amber">
+    <div class="kpi-head">
+      <span class="kpi-icon">🏆</span>
+      <span class="kpi-badge badge-yellow" id="kpiAvgLabel">-</span>
+    </div>
+    <div class="kpi-label">คะแนนเฉลี่ยรวม</div>
+    <div class="kpi-value" id="kpiAvg">0.0<span class="small">/100</span></div>
+  </div>
+
+  <div class="kpi k-blue">
+    <div class="kpi-head">
+      <span class="kpi-icon">📊</span>
+      <span class="kpi-badge badge-blue" id="kpiRatio">-</span>
+    </div>
+    <div class="kpi-label">Formal / Informal</div>
+    <div class="kpi-value" id="kpiFI">0<span class="small">/</span>0</div>
+  </div>
+
+  <div class="kpi k-red">
+    <div class="kpi-head">
+      <span class="kpi-icon">📉</span>
+      <span class="kpi-badge badge-red">ล่างสุด 5</span>
+    </div>
+    <div class="kpi-label">คะแนนต่ำสุดในกลุ่ม</div>
+    <div class="kpi-value red" id="kpiBottomAvg">0.0<span class="small">/100</span></div>
+  </div>
+</div>
+
+<!-- Charts Row 1 -->
+<div class="grid-2">
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="card-title">📈 เทรนด์คะแนนเฉลี่ยรายเดือน</div>
+        <div class="card-sub">6 เดือนย้อนหลัง · แยกตามระบบ</div>
+      </div>
+      <div class="legend">
+        <span class="legend-item"><span class="legend-swatch" style="background:#2d5a27"></span>AL</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:#eab308"></span>SITMAP</span>
+      </div>
+    </div>
+    <div id="trendChart" style="height:220px"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🎯 คะแนนรายด้าน</div>
+    <div class="card-sub" style="margin-bottom:12px">เฉลี่ยทั้งโรงเรียน</div>
+    <div id="radarChart" style="height:230px"></div>
+  </div>
+</div>
+
+<!-- Charts Row 2 -->
+<div class="grid-1-1">
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="card-title">🏆 Top 5 ครูคะแนนสูง</div>
+        <div class="card-sub">ล่าสุด</div>
+      </div>
+    </div>
+    <div id="topList"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="card-title" style="color:var(--red)">📉 Bottom 5 — คะแนนต่ำสุดของกลุ่ม</div>
+        <div class="card-sub">พร้อมระบุด้านที่อ่อนสุด</div>
+      </div>
+    </div>
+    <div id="lowList"></div>
+  </div>
+</div>
+
+<!-- Insights -->
+<div class="grid-1-1">
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="card-title" style="color:var(--green)">📈 พัฒนาการดีขึ้น</div>
+        <div class="card-sub">ครูที่คะแนนล่าสุดสูงกว่าครั้งก่อน</div>
+      </div>
+    </div>
+    <div id="improvedList"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="card-title" style="color:var(--amber)">📉 คะแนนถดถอย</div>
+        <div class="card-sub">ครูที่คะแนนล่าสุดต่ำกว่าครั้งก่อน</div>
+      </div>
+    </div>
+    <div id="declinedList"></div>
+  </div>
+</div>
+
+<!-- Activity Feed -->
+<div class="card" style="margin-bottom:12px">
+  <div class="card-head">
+    <div>
+      <div class="card-title">🔥 กิจกรรมล่าสุด</div>
+      <div class="card-sub">การนิเทศ 8 รายการล่าสุด</div>
+    </div>
+    <div class="legend-item" style="color:var(--green)">
+      <span class="live-dot" style="width:6px; height:6px"></span> Live
+    </div>
+  </div>
+  <div id="activityFeed"></div>
+</div>
+
+<!-- Actions -->
+<div class="actions">
+  <button class="btn" onclick="exportCSV()">📥 Export CSV</button>
+  <button class="btn primary" onclick="window.print()">🖨️ Print PDF</button>
+</div>
+
+<div class="footer">
+  CVN Dashboard v1.0 · Powered by Google Sheets · อัปเดตทุก 60 วินาที<br>
+  <span id="footerStatus"></span>
+</div>
+
+</div>
+
+<script>
+// ══════ CONFIG ══════
+const AL_URL = "https://script.google.com/macros/s/AKfycbxK86vLF_-6cHK1TQrBSAVbGfWZsDIPPt6U8zd7c7Q_E1W-jmsUl2mBNxS5cpwRymGh/exec";
+const SITMAP_URL = "https://script.google.com/macros/s/AKfycbzARJwEIuBFvmipZ11dFdMMWboaZYBHcqR6aFQJSpoLjluaVEO1wfR96shX_waPUeVd/exec";
+const ACCESS_PIN = "cvn4167070tc";
+const MASTER_PIN = "CVN-Admin-2518";
+
+// State
+let allData = {al:[], sitmap:[]};
+let filters = {system:"all", kind:"all"};
+let autoRefresh;
+
+// ══════ PIN LOCK ══════
+function unlock(){
+  const p = document.getElementById("pin").value.trim();
+  if(p === ACCESS_PIN || p === MASTER_PIN){
+    document.getElementById("lock").style.display = "none";
+    document.getElementById("app").style.display = "block";
+    localStorage.setItem("cvn_dash_unlock", Date.now());
+    loadData();
+  } else {
+    document.getElementById("pinErr").textContent = "รหัสไม่ถูกต้อง";
+    document.getElementById("pin").value = "";
+  }
+}
+document.getElementById("pin").addEventListener("keypress", e => {
+  if(e.key === "Enter") unlock();
+});
+// Auto-unlock if already unlocked within 8 hours
+const lastUnlock = parseInt(localStorage.getItem("cvn_dash_unlock") || 0);
+if(Date.now() - lastUnlock < 8*3600*1000){
+  document.getElementById("lock").style.display = "none";
+  document.getElementById("app").style.display = "block";
+  loadData();
+}
+
+// ══════ DATA LOADING ══════
+async function loadData(showLoader = false){
+  const btn = document.getElementById("refreshBtn");
+  if(showLoader){
+    btn.disabled = true;
+    btn.innerHTML = '<span>⏳</span><span>กำลังโหลด...</span>';
+  }
+
+  try {
+    const [alRes, smRes] = await Promise.allSettled([
+      fetch(AL_URL + "?action=list").then(r=>r.json()),
+      fetch(SITMAP_URL + "?action=list").then(r=>r.json())
+    ]);
+
+    allData.al = (alRes.status==="fulfilled" && alRes.value.success) ? alRes.value.records : [];
+    allData.sitmap = (smRes.status==="fulfilled" && smRes.value.success) ? smRes.value.records : [];
+
+    document.getElementById("footerStatus").textContent =
+      `AL: ${allData.al.length} รายการ · SITMAP: ${allData.sitmap.length} รายการ`;
+
+    updateAll();
+
+    document.getElementById("lastUpdate").textContent =
+      "อัปเดตล่าสุด: " + new Date().toLocaleString("th-TH");
+  } catch(e){
+    console.error(e);
+    document.getElementById("footerStatus").textContent =
+      "❌ โหลดข้อมูลไม่สำเร็จ: " + e.message;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<span>🔄</span><span>รีเฟรช</span>';
+  }
+}
+
+// ══════ FILTERING ══════
+function getFilteredData(){
+  let al = allData.al.slice();
+  let sm = allData.sitmap.slice();
+
+  if(filters.system === "al") sm = [];
+  if(filters.system === "sitmap") al = [];
+
+  if(filters.kind !== "all"){
+    al = al.filter(r => (r.kind || "formal") === filters.kind);
+    sm = sm.filter(r => (r.kind || "formal") === filters.kind);
+  }
+
+  return {al, sitmap:sm};
+}
+
+// Filter button events
+document.querySelectorAll(".filter-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const group = btn.parentElement;
+    group.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    if(btn.dataset.system) filters.system = btn.dataset.system;
+    if(btn.dataset.kind) filters.kind = btn.dataset.kind;
+    updateAll();
+  });
+});
+
+// ══════ UPDATE UI ══════
+function updateAll(){
+  const {al, sitmap} = getFilteredData();
+  const combined = [...al, ...sitmap];
+
+  updateKPIs(combined, al, sitmap);
+  updateTrend(al, sitmap);
+  updateRadar(al, sitmap);
+  updateTopList(combined);
+  updateLowList(combined);
+  updateInsights(combined);
+  updateActivity(combined);
+}
+
+// ══════ KPIs ══════
+function updateKPIs(all, al, sitmap){
+  document.getElementById("kpiTeachers").textContent = all.length;
+
+  // Recent (this week)
+  const weekAgo = Date.now() - 7*24*3600*1000;
+  const recent = all.filter(r => {
+    const t = new Date(r.timestamp).getTime();
+    return t > weekAgo;
+  }).length;
+  document.getElementById("kpiTeachersDelta").textContent =
+    recent > 0 ? `+${recent} สัปดาห์นี้` : "0 สัปดาห์นี้";
+
+  // Average score
+  const scores = all.map(r => parseFloat(r.total_weighted) || 0).filter(s => s > 0);
+  const avg = scores.length ? scores.reduce((a,b)=>a+b,0)/scores.length : 0;
+  document.getElementById("kpiAvg").innerHTML = avg.toFixed(1) + '<span class="small">/100</span>';
+  document.getElementById("kpiAvgLabel").textContent =
+    avg >= 90 ? "ยอดเยี่ยม" : avg >= 80 ? "ดีเลิศ" : avg >= 70 ? "ดี" : avg >= 60 ? "ปานกลาง" : "พัฒนา";
+
+  // Formal/Informal
+  const formal = all.filter(r => (r.kind||"formal") === "formal").length;
+  const informal = all.filter(r => r.kind === "informal").length;
+  document.getElementById("kpiFI").innerHTML = formal + '<span class="small">/</span>' + informal;
+  const total = formal + informal;
+  document.getElementById("kpiRatio").textContent = total ?
+    Math.round(formal/total*100) + ":" + Math.round(informal/total*100) : "-";
+
+  // Bottom 5 average
+  const sorted = scores.slice().sort((a,b) => a-b);
+  const bottom5 = sorted.slice(0, 5);
+  const bottomAvg = bottom5.length ? bottom5.reduce((a,b)=>a+b,0)/bottom5.length : 0;
+  document.getElementById("kpiBottomAvg").innerHTML = bottomAvg.toFixed(1) + '<span class="small">/100</span>';
+}
+
+// ══════ TREND CHART (SVG) ══════
+function updateTrend(al, sitmap){
+  const container = document.getElementById("trendChart");
+  const months = getLast6Months();
+
+  const alAvg = months.map(m => avgForMonth(al, m));
+  const smAvg = months.map(m => avgForMonth(sitmap, m));
+
+  const w = 400, h = 200, pad = 30;
+  const maxY = 100, minY = 0;
+  const stepX = (w - pad*2) / (months.length - 1);
+
+  const yToPx = v => h - pad - ((v-minY)/(maxY-minY))*(h-pad*2);
+  const xToPx = i => pad + i*stepX;
+
+  function line(data, color){
+    const pts = data.map((v,i) => xToPx(i) + "," + yToPx(v||0)).join(" ");
+    const validPts = data.map((v,i) => v>0 ? xToPx(i) + "," + yToPx(v) : null).filter(x=>x).join(" ");
+    return `
+      <polyline points="${validPts}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round"/>
+      ${data.map((v,i) => v>0 ?
+        `<circle cx="${xToPx(i)}" cy="${yToPx(v)}" r="4" fill="white" stroke="${color}" stroke-width="2"/>` : ''
+      ).join("")}
+    `;
+  }
+
+  container.innerHTML = `
+    <svg viewBox="0 0 ${w} ${h+20}" style="width:100%; height:100%">
+      ${[100,80,60,40,20].map(v => `
+        <line x1="${pad}" y1="${yToPx(v)}" x2="${w-pad+10}" y2="${yToPx(v)}" stroke="#e5e7eb" stroke-width="0.5" stroke-dasharray="2,3"/>
+        <text x="${pad-4}" y="${yToPx(v)+3}" text-anchor="end" font-size="9" fill="#898781">${v}</text>
+      `).join("")}
+      ${line(alAvg, "#2d5a27")}
+      ${line(smAvg, "#eab308")}
+      ${months.map((m,i) => `
+        <text x="${xToPx(i)}" y="${h-8}" text-anchor="middle" font-size="10" fill="#898781">${m.label}</text>
+      `).join("")}
+    </svg>
+  `;
+}
+function getLast6Months(){
+  const months = [];
+  const now = new Date();
+  const thaiMonths = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+  for(let i=5; i>=0; i--){
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    months.push({
+      key: d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0"),
+      label: thaiMonths[d.getMonth()]
+    });
+  }
+  return months;
+}
+function avgForMonth(records, month){
+  const matching = records.filter(r => {
+    if(!r.timestamp) return false;
+    return r.timestamp.substring(0,7) === month.key;
+  });
+  const scores = matching.map(r => parseFloat(r.total_weighted)||0).filter(s => s>0);
+  return scores.length ? scores.reduce((a,b)=>a+b,0)/scores.length : 0;
+}
+
+// ══════ RADAR CHART ══════
+function updateRadar(al, sitmap){
+  const container = document.getElementById("radarChart");
+
+  // For AL: 5 domains (1-5). For SITMAP: 5 dimensions (S-I-T-M-A)
+  // Show weighted for current selection
+  let axes, values;
+
+  if(filters.system === "sitmap" || (filters.system === "all" && al.length === 0)){
+    // SITMAP mode
+    const dims = [
+      {letter:"S", weight:20, ids:["S.1","S.2","S.3","S.4"]},
+      {letter:"I", weight:10, ids:["I.1","I.2"]},
+      {letter:"T", weight:45, ids:["T.1","T.2","T.3","T.4","T.5","T.6","T.7","T.8","T.9"]},
+      {letter:"M", weight:15, ids:["M.1","M.2","M.3"]},
+      {letter:"A", weight:10, ids:["A.1","A.2"]}
+    ];
+    axes = dims.map(d => d.letter);
+    values = dims.map(d => {
+      const scores = sitmap.map(r => {
+        const raw = d.ids.reduce((s,id) => s + (parseFloat(r["score_"+id])||0), 0);
+        const max = d.ids.length * 5;
+        return max ? (raw/max)*100 : 0;
+      }).filter(s => s>0);
+      return scores.length ? scores.reduce((a,b)=>a+b,0)/scores.length : 0;
+    });
+  } else {
+    // AL mode (default)
+    const domains = [
+      {id:1, ids:["1.1.1","1.1.2","1.1.3","1.1.4","1.1.5","1.2.1","1.2.2","1.2.3","1.3.1","1.3.2","1.3.3","1.4.1","1.4.2","1.4.3","1.5.1"]},
+      {id:2, ids:["2.1.1","2.1.2","2.2.1","2.3.1"]},
+      {id:3, ids:["3.1.1","3.1.2","3.2.1","3.2.2","3.3.1","3.3.2","3.3.3","3.4.1","3.4.2"]},
+      {id:4, ids:["4.1.1","4.2.1","4.2.2","4.3.1","4.3.2","4.4.1"]},
+      {id:5, ids:["5.1.1","5.2.1","5.2.2"]}
+    ];
+    axes = domains.map(d => "ด้าน "+d.id);
+    values = domains.map(d => {
+      const scores = al.map(r => {
+        const raw = d.ids.reduce((s,id) => s + (parseFloat(r["score_"+id])||0), 0);
+        const max = d.ids.length * 5;
+        return max ? (raw/max)*100 : 0;
+      }).filter(s => s>0);
+      return scores.length ? scores.reduce((a,b)=>a+b,0)/scores.length : 0;
+    });
+  }
+
+  drawRadar(container, axes, values);
+}
+
+function drawRadar(container, axes, values){
+  const size = 220;
+  const cx = size/2, cy = size/2;
+  const maxR = 80;
+  const n = axes.length;
+
+  const colors = ["#8b5cf6", "#3b82f6", "#ef4444", "#10b981", "#f59e0b"];
+
+  const points = values.map((v,i) => {
+    const angle = (Math.PI*2*i)/n - Math.PI/2;
+    const r = maxR * (v/100);
+    return {
+      x: cx + r*Math.cos(angle),
+      y: cy + r*Math.sin(angle),
+      angle, value: v, color: colors[i%5], label: axes[i]
+    };
+  });
+
+  const rings = [1,2,3,4,5].map(k => {
+    const r = maxR*k/5;
+    const pts = [];
+    for(let i=0; i<n; i++){
+      const angle = (Math.PI*2*i)/n - Math.PI/2;
+      pts.push((cx + r*Math.cos(angle)) + "," + (cy + r*Math.sin(angle)));
+    }
+    return `<polygon points="${pts.join(" ")}" fill="none" stroke="#e5e7eb" stroke-width="0.5"/>`;
+  }).join("");
+
+  const axesLines = points.map(p => `
+    <line x1="${cx}" y1="${cy}" x2="${cx + maxR*Math.cos(p.angle)}" y2="${cy + maxR*Math.sin(p.angle)}" stroke="#e5e7eb" stroke-width="0.5"/>
+  `).join("");
+
+  const dataPoly = `<polygon points="${points.map(p => p.x+","+p.y).join(" ")}" fill="#2d5a27" fill-opacity="0.2" stroke="#2d5a27" stroke-width="2"/>`;
+
+  const dots = points.map(p => `
+    <circle cx="${p.x}" cy="${p.y}" r="5" fill="${p.color}" stroke="white" stroke-width="2"/>
+  `).join("");
+
+  const labels = points.map((p,i) => {
+    const labelR = maxR + 20;
+    const angle = p.angle;
+    const lx = cx + labelR*Math.cos(angle);
+    const ly = cy + labelR*Math.sin(angle) + 3;
+    return `
+      <rect x="${lx-22}" y="${ly-11}" width="44" height="16" rx="8" fill="${p.color}"/>
+      <text x="${lx}" y="${ly}" text-anchor="middle" font-size="10" font-weight="600" fill="white">${p.label}</text>
+    `;
+  }).join("");
+
+  container.innerHTML = `
+    <svg viewBox="0 0 ${size} ${size+20}" style="width:100%; height:100%">
+      ${rings}
+      ${axesLines}
+      ${dataPoly}
+      ${dots}
+      ${labels}
+    </svg>
+  `;
+}
+
+// ══════ TOP LIST ══════
+function updateTopList(records){
+  const scored = records
+    .filter(r => parseFloat(r.total_weighted) > 0)
+    .sort((a,b) => (parseFloat(b.total_weighted)||0) - (parseFloat(a.total_weighted)||0))
+    .slice(0, 5);
+
+  if(!scored.length){
+    document.getElementById("topList").innerHTML = '<div class="empty">ยังไม่มีข้อมูล</div>';
+    return;
+  }
+
+  const medals = ["🥇", "🥈", "🥉", "4.", "5."];
+  const classes = ["top-1", "top-2", "top-3", "", ""];
+
+  document.getElementById("topList").innerHTML = scored.map((r,i) => {
+    const score = parseFloat(r.total_weighted).toFixed(1);
+    const meta = r.subject ? `${escapeHtml(r.subject)} · ${escapeHtml(r.level||"")}` :
+                 r.classLevel ? `${escapeHtml(r.classLevel)} · SITMAP` : "-";
+    return `
+      <div class="list-item ${classes[i]}">
+        <span class="medal">${medals[i]}</span>
+        <div class="list-name">
+          <div class="name">${escapeHtml(r.teacher||"-")}</div>
+          <div class="meta">${meta}</div>
+        </div>
+        <div class="list-score">${score}</div>
+      </div>
+    `;
+  }).join("");
+}
+
+// ══════ LOW LIST ══════
+function updateLowList(records){
+  // Always show Bottom 5 regardless of score
+  const scored = records.filter(r => parseFloat(r.total_weighted) > 0);
+  const bottom = scored
+    .sort((a,b) => (parseFloat(a.total_weighted)||0) - (parseFloat(b.total_weighted)||0))
+    .slice(0, 5);
+
+  if(!bottom.length){
+    document.getElementById("lowList").innerHTML = '<div class="empty">ยังไม่มีข้อมูล</div>';
+    return;
+  }
+
+  document.getElementById("lowList").innerHTML = bottom.map(r => {
+    const score = parseFloat(r.total_weighted);
+    const scoreStr = score.toFixed(1);
+    const initials = (r.teacher||"?").substring(0,1);
+    // Color by score (relative, not fixed at 60)
+    let cls, scoreCls;
+    if(score < 70) {cls = "warn"; scoreCls = "red"}
+    else if(score < 85) {cls = "caution"; scoreCls = "amber"}
+    else {cls = ""; scoreCls = ""}
+
+    // Find weakest domain
+    const weakest = findWeakestDomain(r);
+
+    return `
+      <div class="list-item ${cls}">
+        <div class="avatar">${escapeHtml(initials)}</div>
+        <div class="list-name">
+          <div class="name">${escapeHtml(r.teacher||"-")}</div>
+          <div class="meta">${weakest ? `อ่อนสุด: ${weakest}` : escapeHtml(r.subject||r.classLevel||"-")}</div>
+        </div>
+        <div class="list-score ${scoreCls}">${scoreStr}</div>
+      </div>
+    `;
+  }).join("");
+}
+
+function findWeakestDomain(record){
+  // Try AL structure first (5 domains)
+  const alDomains = [
+    {label:"ด้าน 1 กระบวนการคิด", ids:["1.1.1","1.1.2","1.1.3","1.1.4","1.1.5","1.2.1","1.2.2","1.2.3","1.3.1","1.3.2","1.3.3","1.4.1","1.4.2","1.4.3","1.5.1"]},
+    {label:"ด้าน 2 สื่อเทคโนโลยี", ids:["2.1.1","2.1.2","2.2.1","2.3.1"]},
+    {label:"ด้าน 3 จัดการชั้นเรียน", ids:["3.1.1","3.1.2","3.2.1","3.2.2","3.3.1","3.3.2","3.3.3","3.4.1","3.4.2"]},
+    {label:"ด้าน 4 ประเมินผู้เรียน", ids:["4.1.1","4.2.1","4.2.2","4.3.1","4.3.2","4.4.1"]},
+    {label:"ด้าน 5 สะท้อนกลับ", ids:["5.1.1","5.2.1","5.2.2"]}
+  ];
+  const sitmapDims = [
+    {label:"S นักเรียน", ids:["S.1","S.2","S.3","S.4"]},
+    {label:"I การสอน", ids:["I.1","I.2"]},
+    {label:"T ครู", ids:["T.1","T.2","T.3","T.4","T.5","T.6","T.7","T.8","T.9"]},
+    {label:"M สื่อ", ids:["M.1","M.2","M.3"]},
+    {label:"A บรรยากาศ", ids:["A.1","A.2"]}
+  ];
+
+  // Detect which type - if any AL score field exists, treat as AL
+  const isAL = alDomains[0].ids.some(id => record["score_"+id] !== undefined && record["score_"+id] !== "");
+  const domains = isAL ? alDomains : sitmapDims;
+
+  let weakest = null, minPct = 101;
+  domains.forEach(d => {
+    const scores = d.ids.map(id => parseFloat(record["score_"+id])||0).filter(s => s>0);
+    if(scores.length){
+      const raw = scores.reduce((a,b)=>a+b,0);
+      const max = scores.length * 5;
+      const pct = (raw/max)*100;
+      if(pct < minPct){minPct = pct; weakest = d.label}
+    }
+  });
+
+  return weakest;
+}
+
+// ══════ INSIGHTS: Improvement Tracking ══════
+function updateInsights(records){
+  // Group records by teacher, keep only teachers with 2+ records
+  const byTeacher = {};
+  records.forEach(r => {
+    const t = (r.teacher||"").trim();
+    if(!t) return;
+    const score = parseFloat(r.total_weighted);
+    if(!(score > 0)) return;
+    if(!byTeacher[t]) byTeacher[t] = [];
+    byTeacher[t].push({
+      score,
+      timestamp: new Date(r.timestamp).getTime(),
+      subject: r.subject || r.classLevel || "",
+      kind: r.kind || "formal"
+    });
+  });
+
+  // Calculate delta (latest - previous) for each teacher
+  const deltas = [];
+  Object.entries(byTeacher).forEach(([teacher, records]) => {
+    if(records.length < 2) return;
+    records.sort((a,b) => b.timestamp - a.timestamp); // newest first
+    const latest = records[0];
+    const previous = records[1];
+    const delta = latest.score - previous.score;
+    deltas.push({
+      teacher,
+      latest: latest.score,
+      previous: previous.score,
+      delta,
+      subject: latest.subject,
+      count: records.length
+    });
+  });
+
+  // Improved (top 3 increases)
+  const improved = deltas.filter(d => d.delta > 0).sort((a,b) => b.delta - a.delta).slice(0, 3);
+  document.getElementById("improvedList").innerHTML = improved.length ? improved.map(d => `
+    <div class="list-item" style="background:#f0fdf4; border-left:3px solid var(--green)">
+      <div class="avatar" style="background:#dcfce7; color:#166534">${escapeHtml(d.teacher.substring(0,1))}</div>
+      <div class="list-name">
+        <div class="name">${escapeHtml(d.teacher)}</div>
+        <div class="meta">${escapeHtml(d.subject)} · นิเทศ ${d.count} ครั้ง</div>
+      </div>
+      <div style="text-align:right">
+        <div class="list-score" style="color:var(--green)">${d.latest.toFixed(1)}</div>
+        <div style="font-size:10px; color:var(--green); font-weight:600">↑ +${d.delta.toFixed(1)}</div>
+      </div>
+    </div>
+  `).join("") : '<div class="empty">ยังไม่มีข้อมูลเปรียบเทียบ<br><span style="font-size:10px">ต้องมีการนิเทศครูคนเดียวกัน ≥ 2 ครั้ง</span></div>';
+
+  // Declined (top 3 decreases)
+  const declined = deltas.filter(d => d.delta < 0).sort((a,b) => a.delta - b.delta).slice(0, 3);
+  document.getElementById("declinedList").innerHTML = declined.length ? declined.map(d => `
+    <div class="list-item" style="background:#fffbeb; border-left:3px solid var(--amber)">
+      <div class="avatar" style="background:#fef3c7; color:#92400e">${escapeHtml(d.teacher.substring(0,1))}</div>
+      <div class="list-name">
+        <div class="name">${escapeHtml(d.teacher)}</div>
+        <div class="meta">${escapeHtml(d.subject)} · นิเทศ ${d.count} ครั้ง</div>
+      </div>
+      <div style="text-align:right">
+        <div class="list-score" style="color:var(--amber)">${d.latest.toFixed(1)}</div>
+        <div style="font-size:10px; color:var(--amber); font-weight:600">↓ ${d.delta.toFixed(1)}</div>
+      </div>
+    </div>
+  `).join("") : '<div class="empty">🎉 ไม่มีครูที่คะแนนถดถอย</div>';
+}
+
+// ══════ ACTIVITY FEED ══════
+function updateActivity(records){
+  const recent = records
+    .sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp))
+    .slice(0, 8);
+
+  if(!recent.length){
+    document.getElementById("activityFeed").innerHTML = '<div class="empty">ยังไม่มีกิจกรรม</div>';
+    return;
+  }
+
+  document.getElementById("activityFeed").innerHTML = recent.map(r => {
+    const kind = r.kind || "formal";
+    const kindLabel = kind === "informal" ? "Informal" : "Formal";
+    const badgeClass = kind === "informal" ? "badge-informal" : "badge-formal";
+    const score = parseFloat(r.total_weighted) || 0;
+    const time = getRelativeTime(r.timestamp);
+    const info = r.subject ? `${escapeHtml(r.subject)} ${escapeHtml(r.level||"")}` :
+                 r.classLevel ? `SITMAP · ${escapeHtml(r.classLevel)}` : "-";
+    return `
+      <div class="activity-item">
+        <span class="activity-badge ${badgeClass}">${kindLabel}</span>
+        <span class="activity-teacher"><b>${escapeHtml(r.teacher||"-")}</b> · ${info} · <span style="color:var(--muted)">โดย ${escapeHtml(r.supervisor||"-")}</span></span>
+        <span class="activity-score">${score.toFixed(1)}</span>
+        <span class="activity-time">${time}</span>
+      </div>
+    `;
+  }).join("");
+}
+
+function getRelativeTime(ts){
+  if(!ts) return "-";
+  const diff = Date.now() - new Date(ts).getTime();
+  const mins = Math.floor(diff/60000);
+  if(mins < 1) return "เมื่อกี้";
+  if(mins < 60) return mins + " นาทีที่แล้ว";
+  const hrs = Math.floor(mins/60);
+  if(hrs < 24) return hrs + " ชั่วโมงที่แล้ว";
+  const days = Math.floor(hrs/24);
+  if(days < 7) return days + " วันที่แล้ว";
+  return new Date(ts).toLocaleDateString("th-TH");
+}
+
+// ══════ EXPORT ══════
+function exportCSV(){
+  const {al, sitmap} = getFilteredData();
+  const rows = [...al.map(r => ({...r, _system:"AL"})), ...sitmap.map(r => ({...r, _system:"SITMAP"}))];
+
+  if(!rows.length){alert("ไม่มีข้อมูลให้ export"); return}
+
+  const cols = ["_system","timestamp","kind","teacher","supervisor","subject","level","classLevel","total_weighted","quality"];
+  const csv = [cols.join(",")];
+  rows.forEach(r => {
+    csv.push(cols.map(c => `"${(r[c]||"").toString().replace(/"/g,'""')}"`).join(","));
+  });
+
+  const blob = new Blob(["\uFEFF" + csv.join("\n")], {type:"text/csv"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `CVN_Dashboard_${new Date().toISOString().substring(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ══════ UTIL ══════
+function escapeHtml(s){
+  return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+// ══════ AUTO REFRESH ══════
+autoRefresh = setInterval(() => {
+  if(document.getElementById("app").style.display !== "none"){
+    loadData();
+  }
+}, 60000); // Every 60 seconds
+</script>
+
+</body>
+</html>
