@@ -446,7 +446,7 @@ body {
 // ══════ CONFIG ══════
 const AL_URL = "https://script.google.com/macros/s/AKfycbxK86vLF_-6cHK1TQrBSAVbGfWZsDIPPt6U8zd7c7Q_E1W-jmsUl2mBNxS5cpwRymGh/exec";
 const SITMAP_URL = "https://script.google.com/macros/s/AKfycbzARJwEIuBFvmipZ11dFdMMWboaZYBHcqR6aFQJSpoLjluaVEO1wfR96shX_waPUeVd/exec";
-const ACCESS_PIN = "cvn4167070tc";
+const ACCESS_PIN = "CNF7277TL";
 const MASTER_PIN = "CVN-Admin-2518";
 
 // State
@@ -460,7 +460,7 @@ function unlock(){
   if(p === ACCESS_PIN || p === MASTER_PIN){
     document.getElementById("lock").style.display = "none";
     document.getElementById("app").style.display = "block";
-    localStorage.setItem("cvn_dash_unlock", Date.now());
+    localStorage.setItem("cvn_dash_unlock_v2", Date.now());
     loadData();
   } else {
     document.getElementById("pinErr").textContent = "รหัสไม่ถูกต้อง";
@@ -471,7 +471,7 @@ document.getElementById("pin").addEventListener("keypress", e => {
   if(e.key === "Enter") unlock();
 });
 // Auto-unlock if already unlocked within 8 hours
-const lastUnlock = parseInt(localStorage.getItem("cvn_dash_unlock") || 0);
+const lastUnlock = parseInt(localStorage.getItem("cvn_dash_unlock_v2") || 0);
 if(Date.now() - lastUnlock < 8*3600*1000){
   document.getElementById("lock").style.display = "none";
   document.getElementById("app").style.display = "block";
